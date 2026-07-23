@@ -60,6 +60,29 @@ body.present #canvasCtrls { display: none !important; }
 body.noAside aside { display: none !important; }
 body.present #asideToggle { display: none !important; }
 
+/* Indicador global del modo activo en el body (data-mode lo pone setMode) */
+body[data-mode="connect"] #cv,
+body[data-mode="connect"] #wrap { cursor: crosshair; }
+body[data-mode="connect"]::before {
+  content: "Modo Flecha — clic en un nodo y luego en otro para conectarlos · Esc para salir";
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 55;
+  background: var(--accent);
+  color: #0a1411;
+  padding: 6px 14px;
+  border-radius: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+  box-shadow: 0 4px 12px #0008;
+  animation: modeBanner .25s ease-out;
+}
+@keyframes modeBanner { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (prefers-reduced-motion: reduce) { body[data-mode="connect"]::before { animation: none; } }
+
 /* ----- main / rail ---------------------------------------------------- */
 main { flex: 1; display: flex; min-height: 0; }
 .rail {

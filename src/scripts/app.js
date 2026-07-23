@@ -294,7 +294,7 @@ const P=()=>doc.pages[doc.cur];
 
 let mode="select", pendingShape=null, pendingIcon=null, connecting=null;
 let selN=new Set(), selE=new Set();
-let drag=null, resizing=null, wpDrag=null, connectDrag=null, marquee=null, hoverNode=null;
+let drag=null, resizing=null, wpDrag=null, connectDrag=null, marquee=null, hoverNode=null, arrowDraft=null;
 let placing=null, laserStrokes=[], laserDrawing=null, erasing=false;
 const LASER_LIFE=1100, DEFAULT_SIZES={rect:[180,70], cylinder:[150,90], diamond:[160,100], circle:[110,110], hex:[170,80], text:[200,40]};
 let hi=-1, wpi=-1;
@@ -757,6 +757,20 @@ function render(c,t,opts={}){
     c.strokeRect(marquee.x0,marquee.y0,marquee.x1-marquee.x0,marquee.y1-marquee.y0);
     c.setLineDash([]);
   }
+  if(arrowDraft){
+    // Preview de la flecha en construcción. Línea punteada con punta.
+    c.strokeStyle="#4ad8c7"; c.lineWidth=2; c.setLineDash([6,5]);
+    c.beginPath(); c.moveTo(arrowDraft.x0, arrowDraft.y0); c.lineTo(arrowDraft.x1, arrowDraft.y1); c.stroke();
+    c.setLineDash([]);
+    // Punta de flecha al final
+    const a=Math.atan2(arrowDraft.y1-arrowDraft.y0, arrowDraft.x1-arrowDraft.x0);
+    c.fillStyle="#4ad8c7";
+    c.beginPath();
+    c.moveTo(arrowDraft.x1, arrowDraft.y1);
+    c.lineTo(arrowDraft.x1-11*Math.cos(a)+6*Math.sin(a), arrowDraft.y1-11*Math.sin(a)-6*Math.cos(a));
+    c.lineTo(arrowDraft.x1-11*Math.cos(a)-6*Math.sin(a), arrowDraft.y1-11*Math.sin(a)+6*Math.cos(a));
+    c.closePath(); c.fill();
+  }
   if(placing){
     const dx=Math.abs(placing.x1-placing.x0), dy=Math.abs(placing.y1-placing.y0);
     let gx=(placing.x0+placing.x1)/2, gy=(placing.y0+placing.y1)/2;
@@ -1108,6 +1122,9 @@ function getWorld(ev){
   return { x:(mouse.x-viewX)/viewZoom, y:(mouse.y-viewY)/viewZoom };
 }
 
+function makeEndpoint(x,y){
+  return newNode("circle", x, y, {w:14, h:14, bg:"none", color:"#4ad8c7", label:""});
+}
 wrap.addEventListener("pointerdown", ev=>{
   wrap.setPointerCapture(ev.pointerId);
   const w=getWorld(ev);
@@ -1136,8 +1153,15 @@ wrap.addEventListener("pointerdown", ev=>{
   if(connecting){
     const hitT=hitTest(w.x,w.y);
     if(hitT && hitT.type==="node" && hitT.obj.id!==connecting){
+      // Segundo click sobre un nodo: cierra la flecha
       pushUndo();
       const e=newEdge(connecting, hitT.obj.id);
+      if(e){ selectOnly("edge", e.id); setMode("select"); }
+    } else if(!hitT){
+      // Segundo click sobre área vacía: crea endpoint + flecha desde el primero
+      pushUndo();
+      const ep=makeEndpoint(w.x, w.y);
+      const e=newEdge(connecting, ep);
       if(e){ selectOnly("edge", e.id); setMode("select"); }
     }
     connecting=null; return;
@@ -1170,6 +1194,16 @@ wrap.addEventListener("pointerdown", ev=>{
     }
     return;
   }
+  if(mode==="connect"){
+    // Click sobre área vacía en modo Flecha: inicia arrowDraft (drag-to-draw).
+    // pointerup con drag > 20px crea endpoint destino + flecha desde el origen.
+    // Sin drag, deja el endpoint origen libre (puede encadenarse con más clicks).
+    pushUndo();
+    const ep=makeEndpoint(w.x, w.y);
+    arrowDraft={startId:ep, x0:w.x, y0:w.y, x1:w.x, y1:w.y};
+    connecting=ep;
+    return;
+  }
   if(pendingShape){
     placing={shape:pendingShape, x0:w.x, y0:w.y, x1:w.x, y1:w.y};
     ev.preventDefault(); return;
@@ -1187,6 +1221,7 @@ wrap.addEventListener("pointermove", ev=>{
   if(laserDrawing){ laserDrawing.pts.push({x:w.x, y:w.y, t:performance.now()}); return; }
   if(erasing){ eraseAt(w.x, w.y); return; }
   if(placing){ placing.x1=w.x; placing.y1=w.y; return; }
+  if(arrowDraft){ arrowDraft.x1=w.x; arrowDraft.y1=w.y; return; }
   if(drag){
     for(const id in drag.offs){ const n=nodeById(+id); if(n){ n.x=w.x+drag.offs[id].dx; n.y=w.y+drag.offs[id].dy; } }
     refreshPanel(); return;
@@ -1244,6 +1279,17 @@ wrap.addEventListener("pointerup", ev=>{
     selectOnly("node",n.id);
     pendingShape=null; placing=null;
     document.querySelectorAll(".rail button[data-shape]").forEach(b=>b.classList.remove("toggled"));
+    return;
+  }
+  if(arrowDraft){
+    const dx=arrowDraft.x1-arrowDraft.x0, dy=arrowDraft.y1-arrowDraft.y0;
+    if(Math.hypot(dx,dy)>22){
+      pushUndo();
+      const ep=makeEndpoint(arrowDraft.x1, arrowDraft.y1);
+      const e=newEdge(arrowDraft.startId, ep);
+      if(e){ selectOnly("edge", e.id); setMode("select"); }
+    }
+    arrowDraft=null; connecting=null;
     return;
   }
   if(drag){
@@ -1320,7 +1366,8 @@ function setMode(m){
     document.querySelectorAll(".rail button[data-shape]").forEach(x=>x.classList.remove("toggled"));
   }
   document.querySelectorAll(".rail button[data-mode]").forEach(x=>x.classList.toggle("toggled", x.dataset.mode===m));
-  $("wrap").style.cursor = m==="laser" ? "crosshair" : m==="erase" ? "cell" : "";
+  document.body.dataset.mode=m;
+  $("wrap").style.cursor = m==="laser" ? "crosshair" : m==="erase" ? "cell" : m==="connect" ? "crosshair" : "";
 }
 function eraseAt(x,y){
   const hit=hitTest(x,y);
@@ -1415,7 +1462,7 @@ document.addEventListener("keydown", ev=>{
   else if(ev.key===" "){ togglePlay(); ev.preventDefault(); }
   else if(ev.key==="Escape"){
     if(present){ togglePresent(); }
-    else { clearSel(); connecting=null; setMode("select"); }
+    else { clearSel(); connecting=null; arrowDraft=null; setMode("select"); }
   }
 });
 const KEY_TOOLS={
@@ -1898,39 +1945,177 @@ function mermaidFlowchart(lines){
     const decl=parseNodeDecl(l);
     if(decl) ensure(decl.id,decl.label,decl.shape);
   }
-  return page.nodes.length? page : null;
+  if(!page.nodes.length) return null;
+  layoutFlow(page, horizontal, dir);
+  return page;
+}
+// Layout por capas (Sugiyama simplificado): rango = camino más largo desde las
+// fuentes, orden dentro de la capa por baricentro de los predecesores.
+function layoutFlow(page, horizontal, dir){
+  const nodes=page.nodes; if(!nodes.length) return;
+  const idx={}; nodes.forEach((n,i)=>idx[n.id]=i);
+  const edges=page.edges.map(e=>({a:idx[e.from], b:idx[e.to]}))
+    .filter(e=>e.a!=null && e.b!=null && e.a!==e.b);
+  const rank=new Array(nodes.length).fill(0);
+  for(let it=0, changed=true; changed && it<nodes.length+2; it++){
+    changed=false;
+    for(const e of edges){
+      if(rank[e.b]<rank[e.a]+1 && rank[e.a]+1<=nodes.length){ rank[e.b]=rank[e.a]+1; changed=true; }
+    }
+  }
+  const maxR=Math.max(...rank);
+  const cols=Array.from({length:maxR+1},()=>[]);
+  nodes.forEach((n,i)=>cols[rank[i]].push(i));
+  const preds=nodes.map(()=>[]);
+  edges.forEach(e=>preds[e.b].push(e.a));
+  const pos=new Array(nodes.length).fill(0);
+  cols[0].forEach((i,k)=>pos[i]=k);
+  for(let r=1;r<=maxR;r++){
+    cols[r].sort((a,b)=>{
+      const ba=preds[a].length? preds[a].reduce((s,p)=>s+pos[p],0)/preds[a].length : 1e9;
+      const bb=preds[b].length? preds[b].reduce((s,p)=>s+pos[p],0)/preds[b].length : 1e9;
+      return ba-bb;
+    });
+    cols[r].forEach((i,k)=>pos[i]=k);
+  }
+  const GAP_MAIN=120, GAP_CROSS=70;
+  const colSize=cols.map(col=>Math.max(...col.map(i=>horizontal? nodes[i].w : nodes[i].h)));
+  const colSpan=cols.map(col=>col.reduce((s,i)=>s+(horizontal? nodes[i].h : nodes[i].w),0)+GAP_CROSS*(col.length-1));
+  const maxSpan=Math.max(...colSpan);
+  let main=80;
+  cols.forEach((col,r)=>{
+    let cross=80+(maxSpan-colSpan[r])/2;
+    for(const i of col){
+      const n=nodes[i];
+      if(horizontal){ n.x=snap(main+colSize[r]/2); n.y=snap(cross+n.h/2); cross+=n.h+GAP_CROSS; }
+      else          { n.y=snap(main+colSize[r]/2); n.x=snap(cross+n.w/2); cross+=n.w+GAP_CROSS; }
+    }
+    main+=colSize[r]+GAP_MAIN;
+  });
+  if(dir==="RL"||dir==="BT"){
+    const vals=nodes.map(n=>horizontal? n.x : n.y);
+    const mn=Math.min(...vals), mx=Math.max(...vals);
+    nodes.forEach(n=>{ if(horizontal) n.x=mn+mx-n.x; else n.y=mn+mx-n.y; });
+  }
 }
 function nextNode(page, label, x, y, shape){
   const n={id:page.nextId++, shape, x, y, w:Math.max(120, label.length*9+30), h:60, label, color:PALETTE[0].c, pulse:false, order:page.nodes.length};
   page.nodes.push(n); return n.id;
 }
+// Diagrama de secuencia: participantes como columnas con lifeline punteada y
+// cada mensaje en su propia fila (waypoints a altura creciente → forma ∏, las
+// verticales solapadas dibujan la lifeline). Soporta autonumber, actor,
+// "as" alias, alt/else/opt/loop/par/critical/break, Note over y automensajes.
 function mermaidSequence(lines){
+  const parts=[], byId={};
+  const events=[];
+  let autonum=false, depth=0;
+  const ensureP=(id,label,actor)=>{
+    if(!byId[id]){ byId[id]={id, label:label||id, actor:!!actor, idx:parts.length}; parts.push(byId[id]); }
+    else if(label) byId[id].label=label;
+    return byId[id];
+  };
+  for(let i=1;i<lines.length;i++){
+    const l=lines[i].replace(/%%.*$/,"").trim();
+    if(!l) continue;
+    if(/^autonumber\b/i.test(l)){ autonum=true; continue; }
+    if(/^(activate|deactivate)\b/i.test(l)) continue;
+    let m=l.match(/^(participant|actor)\s+(\w+)(?:\s+as\s+(.+))?$/i);
+    if(m){ ensureP(m[2], m[3]? cleanNodeLabel(m[3]):null, /^actor$/i.test(m[1])); continue; }
+    if(/^box\b/i.test(l)){ depth++; continue; }
+    m=l.match(/^(alt|else|opt|loop|par|and|critical|option|break|rect)\b\s*(.*)$/i);
+    if(m){
+      const kw=m[1].toLowerCase();
+      const alt=(kw==="else"||kw==="and"||kw==="option");
+      events.push({type:"block", kw, text:cleanNodeLabel(m[2]||""), depth:alt? Math.max(0,depth-1):depth});
+      if(!alt) depth++;
+      continue;
+    }
+    if(/^end\b/i.test(l)){ depth=Math.max(0,depth-1); events.push({type:"end"}); continue; }
+    m=l.match(/^note\s+(?:over|left of|right of)\s+([\w,\s]+?)\s*:\s*(.+)$/i);
+    if(m){
+      const ids=m[1].split(/\s*,\s*/).map(s=>s.trim()).filter(Boolean);
+      ids.forEach(id=>ensureP(id));
+      events.push({type:"note", ids, text:cleanNodeLabel(m[2])});
+      continue;
+    }
+    m=l.match(/^(\w+)\s*(--|-)(>>|>|[x)])\s*(?:[+-]\s*)?(\w+)\s*(?::\s*(.*))?$/);
+    if(m){
+      const a=ensureP(m[1]).id, b=ensureP(m[4]).id;
+      const ev={a, b, text:cleanEdgeLabel(m[5]||""), dashed:m[2]==="--"};
+      events.push(Object.assign(ev,{type:a===b?"self":"msg"}));
+      continue;
+    }
+  }
+  if(!parts.length) return null;
+
   const page={name:"Sequence", nodes:[], edges:[], nextId:1};
-  const actors={}; let y=80, x=0;
-  let i=1;
-  while(i<lines.length && !/^[\s|>=:-]+$/.test(lines[i]) && !lines[i].includes("-->")){
-    const a=lines[i].trim().replace(/^participant\s+/,"").replace(/^actor\s+/,"");
-    const m=a.match(/^(\w+)\s*(?:as\s+(.+))?$/);
-    if(m){
-      const id=m[1], label=m[2]||m[1];
-      actors[id]=nextNode(page, label, 80+x*240, y, "rect");
-      x++;
+  const GAPX=80, ROWH=78, HEADY=90;
+  // Carril izquierdo para las etiquetas de bloques (alt/loop/…)
+  const blockW=b=>((b.kw+(b.text?" · "+b.text:"")).length*8+26+b.depth*24);
+  const lane=Math.min(360, Math.max(0, ...events.filter(e=>e.type==="block").map(blockW)));
+  // Columnas: ancho según etiqueta, espaciadas de sobra
+  let cx=60+lane+(lane?60:20);
+  parts.forEach(p=>{
+    const ls=p.label.split("\n");
+    p.w=p.actor? 120 : Math.max(150, Math.max(...ls.map(s=>s.length))*9+36);
+    p.h=p.actor? 92 : 64;
+    p.x=cx+p.w/2; cx=p.x+p.w/2+GAPX;
+  });
+  parts.forEach(p=>{
+    const n=p.actor
+      ? {id:page.nextId++, shape:"icon", icon:"uml_actor", x:p.x, y:HEADY, w:120, h:92, label:p.label, color:PALETTE[5].c, pulse:false, order:page.nodes.length}
+      : {id:page.nextId++, shape:"rect", x:p.x, y:HEADY, w:p.w, h:p.h, label:p.label, color:PALETTE[p.idx%PALETTE.length].c, pulse:false, order:page.nodes.length};
+    page.nodes.push(n); p.nid=n.id;
+  });
+
+  const TOP=HEADY+150, rowY=k=>TOP+k*ROWH;
+  const msgEdges=[];
+  let lvl=0, num=0;
+  for(const ev of events){
+    if(ev.type==="msg"){
+      const A=byId[ev.a], B=byId[ev.b], y=rowY(lvl);
+      msgEdges.push({from:A.nid, to:B.nid, fromSide:"s", toSide:"s", route:"straight",
+        waypoints:[{x:A.x,y},{x:B.x,y}],
+        label:(autonum? (++num)+". ":"")+ev.text,
+        animated:true, dashed:ev.dashed, startArrow:false, endArrow:true,
+        flowDir:"normal", speedFactor:1, dotCount:null});
+      lvl++;
+    } else if(ev.type==="self"){
+      const A=byId[ev.a], y=rowY(lvl);
+      const label="↩ "+(autonum? (++num)+". ":"")+ev.text;
+      const w=label.length*8+24;
+      page.nodes.push({id:page.nextId++, shape:"text", x:A.x+24+w/2, y, w, h:32, label, fs:14,
+        color:PALETTE[5].c, pulse:false, order:page.nodes.length});
+      lvl++;
+    } else if(ev.type==="block"){
+      const label=ev.kw+(ev.text? " · "+ev.text:"");
+      const w=label.length*8+26;
+      page.nodes.push({id:page.nextId++, shape:"text", x:40+ev.depth*24+w/2, y:rowY(lvl), w, h:32,
+        label, fs:15, color:PALETTE[6].c, pulse:false, order:page.nodes.length});
+      lvl++;
+    } else if(ev.type==="note"){
+      const xs=ev.ids.map(id=>byId[id].x), x=(Math.min(...xs)+Math.max(...xs))/2;
+      const w=Math.max(140, ev.text.length*8+30);
+      page.nodes.push({id:page.nextId++, shape:"rect", x, y:rowY(lvl), w, h:44, label:ev.text, fs:14,
+        color:PALETTE[6].c, pulse:false, order:page.nodes.length});
+      lvl++;
+    } else if(ev.type==="end"){
+      lvl+=0.4;
     }
-    i++;
   }
-  const order=[];
-  while(i<lines.length){
-    const l=lines[i].trim();
-    const m=l.match(/^(\w+)\s*(-+>>?|--+)\s*(\w+)\s*:\s*(.+)$/);
-    if(m){
-      const a=actors[m[1]]||nextNode(page, m[1], 80+order.length*240, y+140, "rect");
-      const b=actors[m[3]]||nextNode(page, m[3], 80+order.length*240, y+140, "rect");
-      page.edges.push({id:page.nextId++, from:a, to:b, fromSide:null, toSide:null, route:"straight", waypoints:[], label:m[4], animated:true, dashed:false, endArrow:true, startArrow:false, flowDir:"normal", speedFactor:1, dotCount:null});
-      order.push(m[4]);
-    }
-    i++;
-  }
-  if(!page.nodes.length) return null;
+
+  // Lifelines: línea punteada de cada cabecera a un punto al fondo
+  const bottom=rowY(lvl)+30;
+  parts.forEach(p=>{
+    const cap={id:page.nextId++, shape:"circle", x:p.x, y:bottom, w:18, h:18, label:"",
+      color:PALETTE[5].c, pulse:false, order:page.nodes.length};
+    page.nodes.push(cap);
+    page.edges.push({id:page.nextId++, from:p.nid, to:cap.id, fromSide:"s", toSide:"n",
+      route:"straight", waypoints:[], label:"", animated:false, dashed:true,
+      startArrow:false, endArrow:false, flowDir:"normal", speedFactor:1, dotCount:null});
+  });
+  msgEdges.forEach(e=>{ e.id=page.nextId++; page.edges.push(e); });
   return page;
 }
 
@@ -2177,7 +2362,7 @@ function aiSystemPrompt(){
 Reglas:
 - shape puede ser una forma: rect, cylinder, diamond, circle, hex, text — o un icono: ${iconKeys}.
 - Usa cylinder o db para bases de datos, diamond para decisiones, iconos cuando encajen con la tecnología.
-- Posiciona en cuadrícula: columnas x = 80, 320, 560, 800, 1040; filas y = 80, 220, 360, 500. Flujo de izquierda a derecha, sin solapar nodos.
+- Posiciona en cuadrícula: columnas x = 80, 360, 640, 920, 1200, 1480; filas y = 80, 260, 440, 620. Flujo de izquierda a derecha, en orden de proceso (cada paso a la derecha o debajo del anterior), sin solapar nodos y dejando al menos 140 px entre centros.
 - labels cortos (1-3 palabras), en el mismo idioma que el usuario.
 - edges con dashed:true para flujos asíncronos, respuestas o replicación.
 - Entre 4 y 15 nodos.`;
@@ -2217,8 +2402,8 @@ function aiGraphToPage(g, promptTxt){
     let shape=String(nd.shape||"rect");
     if(shape==="db") shape="cylinder";
     if(!ICONS[shape] && !SHAPES.includes(shape)) shape="rect";
-    const x=Number.isFinite(+nd.x)? +nd.x : 80+(i%4)*240;
-    const y=Number.isFinite(+nd.y)? +nd.y : 80+Math.floor(i/4)*150;
+    const x=Number.isFinite(+nd.x)? +nd.x : 80+(i%4)*280;
+    const y=Number.isFinite(+nd.y)? +nd.y : 80+Math.floor(i/4)*180;
     const ci=shape==="cylinder"?2:ICONS[shape]?0:i%PALETTE.length;
     idMap[nd.id ?? i]=tplNode(p, String(nd.label??""), x, y, shape, ci);
   });
@@ -2229,7 +2414,28 @@ function aiGraphToPage(g, promptTxt){
       label:String(ed.label||""), animated:true, dashed:!!ed.dashed, startArrow:false, endArrow:true,
       flowDir:"normal", speedFactor:1, dotCount:null});
   });
+  spreadOverlaps(p);
   return p;
+}
+// Separa nodos solapados empujándolos por el eje de menor solape.
+// Red de seguridad para diagramas generados (la IA a veces amontona posiciones).
+function spreadOverlaps(page){
+  const MARGIN=36;
+  for(let it=0; it<40; it++){
+    let moved=false;
+    for(let i=0;i<page.nodes.length;i++) for(let j=i+1;j<page.nodes.length;j++){
+      const a=page.nodes[i], b=page.nodes[j];
+      const ox=(a.w+b.w)/2+MARGIN-Math.abs(a.x-b.x);
+      const oy=(a.h+b.h)/2+MARGIN-Math.abs(a.y-b.y);
+      if(ox>0 && oy>0){
+        moved=true;
+        if(ox<oy){ const s=(a.x<=b.x? -1:1)*ox/2; a.x+=s; b.x-=s; }
+        else     { const s=(a.y<=b.y? -1:1)*oy/2; a.y+=s; b.y-=s; }
+      }
+    }
+    if(!moved) break;
+  }
+  page.nodes.forEach(n=>{ n.x=snap(n.x); n.y=snap(n.y); });
 }
 async function generateAI(){
   const key=$("aiKey").value.trim()||ENV_AI_KEY;
