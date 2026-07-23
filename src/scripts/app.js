@@ -183,6 +183,7 @@ es:{
   exportHint:"PNG soporta transparencia. JPG no. SVG es vectorial puro (no animado). Video graba la animación en MP4 (listo para WhatsApp; WebM si el navegador no soporta MP4).",
   videoDur:"Duración (segundos)", recording:"Grabando video…",
   videoUnsupported:"Este navegador no puede grabar video.",
+  videoEmpty:"La grabación salió vacía. Prueba con una escala menor.",
   cancel:"Cancelar", close:"Cerrar", import:"Importar",
   tplHint:"Empieza con un diagrama prediseñado.", tplSearchPh:"Buscar plantilla… (ej. CQRS, kafka, UML)", tplEmpty:"Sin resultados.",
   merTitle:"Importar Mermaid", merHint:"Pega tu código <code>flowchart</code>, <code>sequenceDiagram</code> o <code>graph</code>.",
@@ -261,6 +262,7 @@ en:{
   exportHint:"PNG supports transparency. JPG doesn't. SVG is pure vector (not animated). Video records the animation as MP4 (WhatsApp-ready; WebM if the browser can't record MP4).",
   videoDur:"Duration (seconds)", recording:"Recording video…",
   videoUnsupported:"This browser can't record video.",
+  videoEmpty:"The recording came out empty. Try a smaller scale.",
   cancel:"Cancel", close:"Close", import:"Import",
   tplHint:"Start from a pre-built diagram.", tplSearchPh:"Search templates… (e.g. CQRS, kafka, UML)", tplEmpty:"No results.",
   merTitle:"Import Mermaid", merHint:"Paste your <code>flowchart</code>, <code>sequenceDiagram</code> or <code>graph</code> code.",
@@ -942,12 +944,19 @@ function loadAutosaveData(){ try{ const raw=localStorage.getItem(AUTOSAVE_KEY); 
 function applyProjectData(d){
   runWithoutAutosave(()=>{
     if(d.doc && Array.isArray(d.doc.pages)) doc=d.doc;
-    doc.pages.forEach(pg=>pg.edges.forEach(e=>{
-      if(e.endArrow===undefined){ e.endArrow=true; e.startArrow=!!e.bidir; }
-      if(!e.flowDir) e.flowDir="normal";
-      if(!e.waypoints) e.waypoints=[];
-      if(!e.route) e.route="straight";
-    }));
+    doc.pages.forEach(pg=>{
+      pg.edges.forEach(e=>{
+        // Migración: un bug guardaba el objeto nodo completo en from/to
+        if(e.from && typeof e.from==="object") e.from=e.from.id;
+        if(e.to && typeof e.to==="object") e.to=e.to.id;
+        if(e.endArrow===undefined){ e.endArrow=true; e.startArrow=!!e.bidir; }
+        if(!e.flowDir) e.flowDir="normal";
+        if(!e.waypoints) e.waypoints=[];
+        if(!e.route) e.route="straight";
+      });
+      const ids=new Set(pg.nodes.map(n=>n.id));
+      pg.edges=pg.edges.filter(e=>ids.has(e.from) && ids.has(e.to));
+    });
     undoStack.length=0; redoStack.length=0;
     if(d.settings) Object.assign(settings,d.settings);
     doc.cur=clamp(doc.cur||0,0,doc.pages.length-1);
@@ -1142,7 +1151,8 @@ function getWorld(ev){
 }
 
 function makeEndpoint(x,y){
-  return newNode("circle", x, y, {w:14, h:14, bg:"none", color:"#4ad8c7", label:""});
+  // Devuelve el ID: newEdge/connecting esperan ids, no el objeto nodo.
+  return newNode("circle", x, y, {w:14, h:14, bg:"none", color:"#4ad8c7", label:""}).id;
 }
 wrap.addEventListener("pointerdown", ev=>{
   wrap.setPointerCapture(ev.pointerId);
@@ -1307,8 +1317,11 @@ wrap.addEventListener("pointerup", ev=>{
       const ep=makeEndpoint(arrowDraft.x1, arrowDraft.y1);
       const e=newEdge(arrowDraft.startId, ep);
       if(e){ selectOnly("edge", e.id); setMode("select"); }
+      connecting=null;
     }
-    arrowDraft=null; connecting=null;
+    // Sin drag: connecting conserva el endpoint origen para cerrar
+    // la flecha con el siguiente click (nodo o vacío).
+    arrowDraft=null;
     return;
   }
   if(drag){
@@ -2297,6 +2310,11 @@ function exportVideo(scale, dur){
     .find(m=>window.MediaRecorder && MediaRecorder.isTypeSupported(m));
   if(!mime){ $("exStatus").textContent=t("videoUnsupported"); return; }
   const b=getBounds();
+  // Los encoders H.264 fallan en silencio por encima de ~4096 px (archivo de
+  // 0 bytes). Limitamos a 1920 por lado reduciendo la escala si hace falta.
+  const MAXD=1920;
+  const fit=Math.min(1, (MAXD-80)/(b.w*scale), (MAXD-80)/(b.h*scale));
+  scale*=fit;
   // H.264 exige dimensiones pares
   const w=Math.max(320, Math.round(b.w*scale+80))&~1;
   const h=Math.max(180, Math.round(b.h*scale+80))&~1;
@@ -2308,9 +2326,11 @@ function exportVideo(scale, dur){
   recBusy=true; $("exGo").disabled=true; $("exCancel").disabled=true;
   rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
   rec.onstop=()=>{
-    const ext=mime.startsWith("video/mp4")? "mp4":"webm";
-    download(new Blob(chunks,{type:mime.split(";")[0]}), slug(P().name)+"."+ext);
     recBusy=false; $("exGo").disabled=false; $("exCancel").disabled=false;
+    const blob=new Blob(chunks,{type:mime.split(";")[0]});
+    if(!blob.size){ $("exStatus").textContent=t("videoEmpty"); return; }
+    const ext=mime.startsWith("video/mp4")? "mp4":"webm";
+    download(blob, slug(P().name)+"."+ext);
     $("exStatus").textContent="";
     $("exModal").classList.remove("show");
   };
