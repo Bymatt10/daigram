@@ -1,0 +1,91 @@
+---
+// SEO.astro — meta tags, Open Graph, Twitter card, PWA hints, JSON-LD.
+// Los textos están duplicados a propósito (también en dist/og-image.svg y README)
+// para que cambiar branding sea buscar-y-reemplazar en un solo archivo.
+
+const SITE = "https://daigram.app";
+const TITLE = "daigram — diagramas que fluyen";
+const DESCRIPTION = "Editor de diagramas animados de arquitectura. 100% en el navegador, sin cuenta, sin backend. Pega Mermaid, genera con IA o arrastra nodos.";
+const OG_DESC = "Editor de diagramas animados de arquitectura. Pega Mermaid, genera con IA o arrastra nodos. 100% en el navegador.";
+const TW_DESC = "Editor de diagramas animados. 100% en el navegador, sin cuenta, sin backend.";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "daigram",
+  "alternateName": "daigram.app",
+  "url": SITE,
+  "description": "Editor de diagramas animados de arquitectura que funciona 100% en el navegador. Permite crear, importar Mermaid, generar con IA y exportar a PNG, JPG o SVG.",
+  "applicationCategory": "DesignApplication",
+  "applicationSubCategory": "Diagramming",
+  "operatingSystem": "Any (browser-based)",
+  "inLanguage": ["es", "en"],
+  "isAccessibleForFree": true,
+  "license": "https://github.com/Bymatt10/daigram/blob/main/LICENSE",
+  "creator": { "@type": "Person", "name": "Bymatt" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "Importar Mermaid (flowchart, sequenceDiagram, graph)",
+    "Generar diagramas con IA (claves locales)",
+    "Exportar PNG, JPG y SVG",
+    "Compartir por enlace (deflate-compress en URL)",
+    "Pieles (mint, cyan, amber, rose, lime)",
+    "Modos de trazo (limpio, boceto, caótico)",
+    "Autosave y drag-drop de archivos",
+    "PWA instalable",
+  ],
+  "screenshot": `${SITE}/og-image.png`,
+  "softwareVersion": "0.2",
+};
+---
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="generator" content={Astro.generator} />
+
+<title>{TITLE}</title>
+<meta name="description" content={DESCRIPTION} />
+<meta name="keywords" content="diagramas, arquitectura, editor, mermaid, animado, svg, png, open source, canvas, software architecture, flowchart" />
+<meta name="author" content="Bymatt" />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href={SITE} />
+
+<meta name="theme-color" content="#0e1014" />
+<meta name="color-scheme" content="dark light" />
+
+<!-- Open Graph -->
+<meta property="og:site_name" content="daigram" />
+<meta property="og:title" content={TITLE} />
+<meta property="og:description" content={OG_DESC} />
+<meta property="og:type" content="website" />
+<meta property="og:url" content={SITE} />
+<meta property="og:image" content={`${SITE}/og-image.png`} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="daigram: editor de diagramas animados de arquitectura con importador de Mermaid, generador con IA y exporte a PNG y SVG." />
+<meta property="og:locale" content="es_ES" />
+<meta property="og:locale:alternate" content="en_US" />
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={TITLE} />
+<meta name="twitter:description" content={TW_DESC} />
+<meta name="twitter:image" content={`${SITE}/og-image.png`} />
+<meta name="twitter:image:alt" content="daigram: editor de diagramas animados de arquitectura." />
+
+<!-- PWA / iconos -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="application-name" content="daigram" />
+<meta name="apple-mobile-web-app-title" content="daigram" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<!-- Fuentes -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet" />
+
+<!-- Datos estructurados (JSON-LD) -->
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

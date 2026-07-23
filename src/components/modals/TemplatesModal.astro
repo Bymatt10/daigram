@@ -1,0 +1,14 @@
+---
+// TemplatesModal.astro — galería de plantillas (llenada por app.js desde TEMPLATES).
+// Búsqueda por nombre con #tplSearch.
+---
+
+<div class="overlay" id="tplModal">
+  <div class="card tplCard">
+    <h2 data-i18n="templates">Plantillas</h2>
+    <p class="hint" data-i18n="tplHint">Empieza con un diagrama prediseñado.</p>
+    <input id="tplSearch" type="search" data-i18n-ph="tplSearchPh" placeholder="Buscar plantilla…" autocomplete="off" />
+    <div class="templateGrid" id="tplGrid"></div>
+    <div class="actions"><button id="tplCancel" data-i18n="close">Cerrar</button></div>
+  </div>
+</div>

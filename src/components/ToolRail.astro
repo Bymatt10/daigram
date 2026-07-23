@@ -1,0 +1,34 @@
+---
+// ToolRail.astro — barra lateral izquierda con modos (select/connect/laser/erase),
+// formas (rect/cylinder/diamond/circle/hex/text), iconos cloud e imagen.
+// Atributos data-* usados por app.js: data-mode, data-shape, id.
+---
+
+<nav class="rail" aria-label="Herramientas">
+  <button data-mode="select" class="toggled" data-i18n-title="tMove" title="Seleccionar / mover (V o 1)">
+    <svg viewBox="0 0 24 24"><path d="M6 3l12 9-5.5 1L10 19z"></path></svg><span data-i18n="move">Mover</span><span class="kn">1</span>
+  </button>
+  <button data-mode="connect" data-i18n-title="tConnect" title="Conectar con clics (C o 2)">
+    <svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="2.4"></circle><circle cx="19" cy="5" r="2.4"></circle><path d="M7 17L17 7"></path></svg><span data-i18n="arrow">Flecha</span><span class="kn">2</span>
+  </button>
+  <button data-mode="laser" data-i18n-title="tLaser" title="Puntero láser (L o 3)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"></circle><path d="M12 3v3.5M12 17.5V21M3 12h3.5M17.5 12H21M5.6 5.6l2.5 2.5M15.9 15.9l2.5 2.5M18.4 5.6l-2.5 2.5M8.1 15.9l-2.5 2.5"></path></svg><span data-i18n="laser">Láser</span><span class="kn">3</span>
+  </button>
+  <button data-mode="erase" data-i18n-title="tErase" title="Borrador (E): clic o arrastra sobre lo que quieras eliminar">
+    <svg viewBox="0 0 24 24"><path d="M15 4l5 5-8.5 8.5H8l-3.5-3.5z"></path><line x1="5" y1="20" x2="20" y2="20"></line></svg><span data-i18n="erase">Borrar</span><span class="kn">E</span>
+  </button>
+  <hr />
+  <button data-shape="rect" data-i18n-title="tBox" title="Caja (4)"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3"></rect></svg><span data-i18n="box">Caja</span><span class="kn">4</span></button>
+  <button data-shape="cylinder" data-i18n-title="tDb" title="Base de datos (5)"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"></path></svg><span data-i18n="db">BD</span><span class="kn">5</span></button>
+  <button data-shape="diamond" data-i18n-title="tDiamond" title="Decisión (6)"><svg viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9z"></path></svg><span data-i18n="diamond">Rombo</span><span class="kn">6</span></button>
+  <button data-shape="circle" data-i18n-title="tCircle" title="Círculo (7)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle></svg><span data-i18n="circle">Círculo</span><span class="kn">7</span></button>
+  <button data-shape="hex" data-i18n-title="tHex" title="Hexágono (8)"><svg viewBox="0 0 24 24"><path d="M7 4h10l4 8-4 8H7l-4-8z"></path></svg>Hex<span class="kn">8</span></button>
+  <button data-shape="text" data-i18n-title="tText" title="Solo texto (9)"><svg viewBox="0 0 24 24"><path d="M5 6h14M12 6v13"></path></svg><span data-i18n="text">Texto</span><span class="kn">9</span></button>
+  <hr />
+  <button id="btnIcons" data-i18n-title="tIcons" title="Iconos cloud (GCP, AWS, Azure…) (0)">
+    <svg viewBox="0 0 24 24"><path d="M7 17a4 4 0 0 1 0-8 5.5 5.5 0 0 1 10.6 1.4A3.5 3.5 0 0 1 17 17z"></path></svg><span data-i18n="icons">Iconos</span><span class="kn">0</span>
+  </button>
+  <button id="btnImg" data-i18n-title="tImg" title="Insertar imagen (o pega con Ctrl+V)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.6"></circle><path d="M4 17l5-5 4 4 3-3 4 4"></path></svg><span data-i18n="image">Imagen</span>
+  </button>
+</nav>

@@ -1,0 +1,31 @@
+---
+// ExportModal.astro — diálogo de exportación PNG/JPG/SVG con escala y opción de
+// fondo transparente (PNG). Se abre con .show en #exModal.
+---
+
+<div class="overlay" id="exModal">
+  <div class="card">
+    <h2 data-i18n="exportTitle">Exportar página actual</h2>
+    <div class="row"><label data-i18n="format">Formato</label>
+      <select id="exFmt">
+        <option value="png">PNG</option>
+        <option value="jpg">JPG</option>
+        <option value="svg">SVG</option>
+      </select>
+    </div>
+    <div class="row"><label data-i18n="scale">Escala</label>
+      <select id="exRes">
+        <option value="0.5">0.5x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
+    </div>
+    <div class="row" id="exRowTr"><label data-i18n="transparentBg">Fondo transparente</label><input type="checkbox" id="exTr" /></div>
+    <p class="hint" id="exHint" data-i18n="exportHint">PNG soporta transparencia. JPG no. SVG es vectorial puro (no animado).</p>
+    <div class="actions">
+      <button id="exCancel" data-i18n="cancel">Cancelar</button>
+      <button id="exGo" class="primary" data-i18n="export">Exportar</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,118 @@
+---
+// SidePanel.astro — aside derecho con dos secciones:
+//   1) Selección: vacío / multi / cuerpo único (rows por nodo/flecha)
+//   2) Animación: controles globales de flujo
+// Cada row está identificado por id y atributos data-i18n para que app.js
+// conecte los listeners y applyLang() traduzca.
+---
+
+<aside>
+  <section>
+    <h3 data-i18n="selection">Selección</h3>
+    <div id="noSel" class="hint" data-i18n="hintMain">Nada seleccionado.</div>
+    <div id="multiSel" style="display:none">
+      <p class="hint" id="multiCount" style="font-size:12px; color:var(--text);"></p>
+      <div class="btnGrid">
+        <button id="mCopy" data-i18n="copy">Copiar</button>
+        <button id="mCut" data-i18n="cut">Cortar</button>
+        <button id="mDup" data-i18n="dup">Duplicar</button>
+        <button id="mDel" class="danger" data-i18n="del">Eliminar</button>
+      </div>
+    </div>
+    <div id="selBody" style="display:none">
+      <div class="row" style="flex-direction:column; align-items:stretch;">
+        <label for="lblEdit" data-i18n="textLbl">Texto (Enter = nueva línea)</label>
+        <textarea id="lblEdit"></textarea>
+      </div>
+      <div class="row" id="rowFs"><label data-i18n="fontSize">Tamaño de texto</label><input type="number" id="fsIn" min="8" max="96" placeholder="auto" /></div>
+      <div class="row" id="rowColor" style="flex-direction:column; align-items:stretch;">
+        <label data-i18n="semColor">Color semántico</label>
+        <div class="swatches" id="swatches"></div>
+      </div>
+      <div class="row" id="rowShape"><label data-i18n="shape">Forma</label>
+        <select id="shapeSel">
+          <option value="rect" data-i18n="box">Caja</option><option value="cylinder" data-i18n="db">BD</option>
+          <option value="diamond" data-i18n="diamond">Rombo</option><option value="circle" data-i18n="circle">Círculo</option>
+          <option value="hex" data-i18n="hexagon">Hexágono</option><option value="text" data-i18n="text">Texto</option>
+        </select>
+      </div>
+      <div class="row" id="rowBg" style="flex-direction:column; align-items:stretch;">
+        <label data-i18n="bgLbl">Fondo de la figura</label>
+        <div class="swatches" id="bgSw"></div>
+      </div>
+      <div class="row" id="rowStrokeStyle"><label data-i18n="strokeStyleLbl">Estilo de borde</label>
+        <select id="strokeStyleSel">
+          <option value="solid" data-i18n="ssSolid">Sólido</option>
+          <option value="dashed" data-i18n="ssDashed">Discontinuo</option>
+          <option value="dotted" data-i18n="ssDotted">Punteado</option>
+        </select>
+      </div>
+      <div class="row" id="rowSlop"><label data-i18n="slopLbl">Trazo</label>
+        <select id="slopSel">
+          <option value="" data-i18n="slopAuto">Auto (tema)</option>
+          <option value="0" data-i18n="slopClean">Limpio</option>
+          <option value="1" data-i18n="slopSketch">Boceto</option>
+          <option value="2" data-i18n="slopWild">Caótico</option>
+        </select>
+      </div>
+      <div class="row" id="rowCorners"><label data-i18n="cornersLbl">Esquinas</label>
+        <select id="cornerSel">
+          <option value="round" data-i18n="cornerRound">Redondeadas</option>
+          <option value="sharp" data-i18n="cornerSharp">Rectas</option>
+        </select>
+      </div>
+      <div class="row" id="rowOpacity"><label data-i18n="opacityLbl">Opacidad</label><input type="range" id="opIn" min="10" max="100" step="5" value="100" /></div>
+      <div class="btnGrid" id="rowZ">
+        <button id="btnFront" data-i18n="front">Al frente</button>
+        <button id="btnBack" data-i18n="back">Atrás</button>
+      </div>
+      <div class="row" id="rowPulse" style="margin-top:7px;"><label data-i18n="pulse">Pulso (resaltar)</label><input type="checkbox" id="pulseChk" /></div>
+      <div class="row" id="rowOrder"><label data-i18n="order">Orden de aparición</label><input type="number" id="orderIn" min="0" max="99" /></div>
+      <div class="row" id="rowRoute"><label data-i18n="route">Ruta</label>
+        <select id="routeSel"><option value="straight" data-i18n="straight">Recta</option><option value="ortho" data-i18n="ortho">Ortogonal</option></select>
+      </div>
+      <div class="row" id="rowFrom"><label data-i18n="exitFrom">Sale por</label>
+        <select id="fromSel"><option value="">Auto</option><option value="n" data-i18n="top">Arriba</option><option value="e" data-i18n="right">Derecha</option><option value="s" data-i18n="bottom">Abajo</option><option value="w" data-i18n="left">Izquierda</option></select>
+      </div>
+      <div class="row" id="rowTo"><label data-i18n="enterAt">Entra por</label>
+        <select id="toSel"><option value="">Auto</option><option value="n" data-i18n="top">Arriba</option><option value="e" data-i18n="right">Derecha</option><option value="s" data-i18n="bottom">Abajo</option><option value="w" data-i18n="left">Izquierda</option></select>
+      </div>
+      <div class="row" id="rowAnim"><label data-i18n="animDots">Puntos animados</label><input type="checkbox" id="animChk" /></div>
+      <div class="row" id="rowSpeedF"><label data-i18n="speedFac">Velocidad (× global)</label>
+        <select id="speedFacSel">
+          <option value="1">1×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option>
+        </select>
+      </div>
+      <div class="row" id="rowDotsGlobal"><label data-i18n="dotsGlobal">Puntos globales</label><input type="checkbox" id="dotsGlobalChk" /></div>
+      <div class="row" id="rowDots"><label data-i18n="dotsEdge">Puntos (esta flecha)</label>
+        <input type="number" id="edgeDotsIn" min="1" max="6" step="1" />
+      </div>
+      <div class="row" id="rowLineC" style="flex-direction:column; align-items:stretch;">
+        <label data-i18n="lineColor">Color de línea</label>
+        <div class="swatches" id="lineSw"></div>
+      </div>
+      <div class="row" id="rowDotC" style="flex-direction:column; align-items:stretch;">
+        <label data-i18n="dotColor">Color de puntos</label>
+        <div class="swatches" id="dotSw"></div>
+      </div>
+      <div class="row" id="rowDash"><label data-i18n="dashed">Línea punteada</label><input type="checkbox" id="dashChk" /></div>
+      <div class="row" id="rowArrS"><label data-i18n="arrStart">Punta al inicio</label><input type="checkbox" id="arrSChk" /></div>
+      <div class="row" id="rowArrE"><label data-i18n="arrEnd">Punta al final</label><input type="checkbox" id="arrEChk" /></div>
+      <div class="row" id="rowFlow"><label data-i18n="dotFlow">Flujo de puntos</label>
+        <select id="flowSel"><option value="normal" data-i18n="flowNormal">Normal →</option><option value="reverse" data-i18n="flowReverse">Inverso ←</option><option value="alternate" data-i18n="flowAlt">Alterno ⇄</option></select>
+      </div>
+      <button id="btnWps" class="wfull" style="display:none" data-i18n="removeBends">Quitar codos</button>
+      <button id="btnDel" class="danger wfull" data-i18n="deleteKey">Eliminar (Supr)</button>
+    </div>
+  </section>
+
+  <section>
+    <h3 data-i18n="animation">Animación</h3>
+    <div class="row"><label data-i18n="flowSpeed">Velocidad de flujo</label><input type="range" id="speedIn" min="0.2" max="2" step="0.1" value="0.5" /></div>
+    <div class="row"><label data-i18n="dotsPerArrow">Puntos por flecha</label><input type="range" id="dotsIn" min="1" max="6" step="1" value="3" /></div>
+    <div class="row"><label data-i18n="boilLbl">Trazo vivo (boiling)</label><input type="checkbox" id="boilChk" /></div>
+    <div class="row"><label data-i18n="animBuild">Animar aparición</label><input type="checkbox" id="buildChk" /></div>
+    <div class="row"><label data-i18n="buildInterval">Intervalo aparición</label><input type="range" id="staggerIn" min="0.2" max="1.2" step="0.1" value="0.45" /></div>
+    <p class="hint" data-i18n="buildHint">La aparición usa el «orden» de cada nodo. Las flechas aparecen cuando ambos nodos son visibles.</p>
+  </section>
+</aside>

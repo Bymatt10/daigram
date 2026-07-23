@@ -1,0 +1,15 @@
+---
+// AutosaveModal.astro — se muestra al cargar si hay una sesión guardada
+// en localStorage (daigram.autosave.v1). Ofrece restaurar o descartar.
+---
+
+<div class="overlay" id="autosaveModal">
+  <div class="card">
+    <h2 data-i18n="sessionTitle">Sesión guardada</h2>
+    <p class="hint" data-i18n="sessionHint">Se encontró una sesión guardada localmente. ¿Quieres restaurarla?</p>
+    <div class="actions">
+      <button id="autosaveDiscard" data-i18n="discard">Descartar</button>
+      <button id="autosaveRestore" class="primary" data-i18n="restore">Restaurar</button>
+    </div>
+  </div>
+</div>

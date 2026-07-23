@@ -1,0 +1,9 @@
+/* Punto único de entrada para los estilos.
+   Cada bloque está separado por propósito en src/styles/*.css. */
+
+@import "./tokens.css";
+@import "./base.css";
+@import "./layout.css";
+@import "./modals.css";
+@import "./templates.css";
+@import "./responsive.css";

@@ -1,0 +1,74 @@
+/* modals.css — overlay base, tarjeta (.card), acciones, barra de progreso,
+   y widgets específicos de los modales (lista de proyectos). */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: #000c;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.overlay.show { display: flex; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 24px 28px;
+  min-width: 320px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+}
+.card h2 {
+  font-family: Georgia, serif;
+  font-size: 17px;
+  font-weight: normal;
+  margin-bottom: 14px;
+}
+.card .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* ----- lista de proyectos (dentro de #projModal) ---------------------- */
+#projList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.projRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.projRow .pInfo { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.projRow .pInfo b { font-size: 13px; }
+
+/* ----- barra de progreso (usada por IA y otros procesos) ------------- */
+#bar {
+  width: 100%;
+  height: 8px;
+  background: var(--panel2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+#barFill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width .15s;
+}
+@media (prefers-reduced-motion: reduce) { #barFill { transition: none; } }

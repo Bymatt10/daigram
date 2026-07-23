@@ -1,0 +1,17 @@
+---
+// MermaidModal.astro — pega código Mermaid (flowchart / sequenceDiagram / graph)
+// y lo importa como nueva página via mermaidToPage() en app.js.
+---
+
+<div class="overlay" id="merModal">
+  <div class="card">
+    <h2 data-i18n="merTitle">Importar Mermaid</h2>
+    <p class="hint" data-i18n="merHint">Pega tu código <code>flowchart</code>, <code>sequenceDiagram</code> o <code>graph</code>.</p>
+    <textarea id="merInput" style="width:100%; min-height:200px; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; font:12px ui-monospace,monospace; resize:vertical;"></textarea>
+    <p class="hint" id="merStatus"></p>
+    <div class="actions">
+      <button id="merCancel" data-i18n="cancel">Cancelar</button>
+      <button id="merGo" class="primary" data-i18n="import">Importar</button>
+    </div>
+  </div>
+</div>

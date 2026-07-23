@@ -1,0 +1,58 @@
+---
+// Toolbar.astro — barra superior con logo, acciones y selectores.
+// Los ids deben coincidir con los que app.js busca por $().
+---
+
+<header>
+  <span class="logo">dai<b>gram</b><span aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ver">v0.2</span></span>
+  <button id="btnDemo" data-i18n="demo">Ejemplo</button>
+  <button id="btnClear" data-i18n="clear">Limpiar página</button>
+  <button id="btnTemplates" data-i18n="templates">Plantillas</button>
+  <button id="btnMermaid">Mermaid</button>
+  <button id="btnAI">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M11 4l1.8 4.7L17.5 10.5l-4.7 1.8L11 17l-1.8-4.7L4.5 10.5l4.7-1.8z"></path><path d="M19 3v4"></path><path d="M17 5h4"></path></svg><span data-i18n="ai">IA</span>
+  </button>
+  <span class="spacer"></span>
+  <select id="langSel" title="Idioma / Language">
+    <option value="es">ES</option>
+    <option value="en">EN</option>
+  </select>
+  <select id="themeSel" data-i18n-title="themeTitle" title="Tema del lienzo">
+    <option value="dark" data-i18n="themeDark">Fondo oscuro</option>
+    <option value="crema" data-i18n="themeCrema">Fondo crema</option>
+    <option value="claro" data-i18n="themeClaro">Fondo claro</option>
+  </select>
+  <select id="skinSel" data-i18n-title="skinTitle" title="Estilo visual">
+    <option value="mint">Mint</option>
+    <option value="cyan">Cyan</option>
+    <option value="amber" data-i18n="skinAmber">Ámbar</option>
+    <option value="rose" data-i18n="skinRose">Rosa</option>
+    <option value="lime" data-i18n="skinLime">Lima</option>
+  </select>
+  <label style="display:flex; align-items:center; gap:5px; font-size:12px; cursor:pointer;">
+    <input type="checkbox" id="chkGrid" checked /> <span data-i18n="gridLbl">Cuadrícula</span>
+  </label>
+  <button id="btnPresent" data-i18n-title="tPresent" title="Modo presentación (P)">
+    <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M9 21h6M12 17v4"></path><path d="M10 8l4.5 2.5L10 13z"></path></svg><span data-i18n="present">Presentar</span>
+  </button>
+  <button id="btnPlay" class="toggled">
+    <svg id="playIco" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg><span id="playLbl">Pausa</span>
+  </button>
+  <button id="btnProjects" data-i18n-title="tProjects" title="Proyectos guardados en este navegador">
+    <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"></path><path d="M10 12h4"></path></svg><span data-i18n="projects">Proyectos</span>
+  </button>
+  <button id="btnJsonOut" data-i18n-title="saveTitle" title="Guardar archivo .daigram.json (Ctrl+S)">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"></path><path d="M8 3v5h7V3"></path><rect x="8" y="13" width="8" height="6"></rect></svg><span data-i18n="save">Guardar</span>
+  </button>
+  <button id="btnJsonIn" data-i18n-title="openTitle" title="Abrir archivo guardado">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M3 19V6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v2"></path><path d="M3 19l2.5-8h17L20 19z"></path></svg><span data-i18n="open">Abrir</span>
+  </button>
+  <button id="btnShare" data-i18n-title="shareTitle" title="Copiar enlace con el diagrama">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3.3-3.3a4 4 0 1 0-5.7-5.7l-1.6 1.6"></path><path d="M14 10a4 4 0 0 0-5.7 0L5 13.3A4 4 0 1 0 10.7 19l1.6-1.6"></path></svg><span id="shareLbl" data-i18n="share">Enlace</span>
+  </button>
+  <input type="file" id="fileIn" accept=".json,.daigram" style="display:none" />
+  <input type="file" id="imgIn" accept="image/*" style="display:none" />
+  <button id="btnExport" class="primary">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M12 3v11"></path><path d="M8 10l4 4 4-4"></path><path d="M4 17v3h16v-3"></path></svg><span data-i18n="export">Exportar</span>
+  </button>
+</header>

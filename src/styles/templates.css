@@ -1,0 +1,60 @@
+/* templates.css — estilos del modal de plantillas y swatches de skin. */
+
+.tplCard { width: 660px; }
+
+#tplSearch {
+  width: 100%;
+  margin-top: 10px;
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.templateGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.templateGrid button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px;
+  text-align: left;
+  height: auto;
+}
+.templateGrid button .t {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 12px;
+}
+.templateGrid button .d {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.skinSwatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.skinSwatch {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #fff;
+  text-shadow: 0 1px 2px #0008;
+}
+.skinSwatch.sel { border-color: var(--accent); }

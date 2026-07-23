@@ -1,0 +1,19 @@
+---
+// AIModal.astro — prompt + API key (MiniMax) para generar diagramas con IA.
+// La key queda en localStorage (nunca se envía salvo hacia la API de MiniMax).
+---
+
+<div class="overlay" id="aiModal">
+  <div class="card" style="width:560px">
+    <h2 data-i18n="aiTitle">Generar diagrama con IA</h2>
+    <p class="hint" data-i18n="aiHint">Describe el diagrama que quieres y la IA lo dibuja en una página nueva.</p>
+    <textarea id="aiPrompt" data-i18n-ph="aiPromptPh" placeholder="Ej: arquitectura de un e-commerce con carrito, pagos con Stripe, cola de pedidos y base de datos" style="width:100%; min-height:110px; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; font:inherit; resize:vertical; margin-bottom:8px;"></textarea>
+    <div class="row"><label data-i18n="aiKeyLbl">API key (MiniMax)</label><input type="password" id="aiKey" autocomplete="off" style="flex:1; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:6px 8px; font:inherit;" /></div>
+    <p class="hint" data-i18n="aiKeyHint">La key se guarda solo en tu navegador (localStorage). Nunca sale de aquí salvo hacia la API de MiniMax.</p>
+    <p class="hint" id="aiStatus"></p>
+    <div class="actions">
+      <button id="aiCancel" data-i18n="cancel">Cancelar</button>
+      <button id="aiGo" class="primary" data-i18n="aiGo">Generar</button>
+    </div>
+  </div>
+</div>

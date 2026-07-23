@@ -1,0 +1,37 @@
+/* tokens.css — variables de tema y reset base.
+   Cambiar acá afecta TODA la UI. Los tres temas (dark / crema / claro)
+   se eligen con data-theme en <html>. */
+
+:root {
+  --bg: #0e1014;
+  --panel: #15181d;
+  --panel2: #1c2026;
+  --line: #2a2f37;
+  --text: #e8eaed;
+  --muted: #8a8f99;
+  --accent: #4ad8c7;
+  --accent2: #7aa2ff;
+  --danger: #e57373;
+}
+:root[data-theme="crema"] {
+  --bg: #f4eee1;
+  --panel: #ebe3d2;
+  --panel2: #e1d8c5;
+  --line: #c9bfa8;
+  --text: #2b2620;
+  --muted: #7a6f5c;
+  --accent: #2a8a7a;
+  --accent2: #3a6ed8;
+}
+:root[data-theme="claro"] {
+  --bg: #ffffff;
+  --panel: #f5f6f8;
+  --panel2: #e9ebef;
+  --line: #d0d4dc;
+  --text: #14171c;
+  --muted: #5b6470;
+  --accent: #0e8a7a;
+  --accent2: #3a6ed8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }

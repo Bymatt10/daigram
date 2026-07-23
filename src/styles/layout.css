@@ -1,0 +1,284 @@
+/* layout.css — chrome de la app: header, main, rail, stage, aside, footer,
+   tabs, drawer de iconos, controles del canvas, hint de presentación,
+   estados globales (present / noAside). */
+
+/* ----- header ---------------------------------------------------------- */
+header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+header .logo {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  letter-spacing: .3px;
+  margin-right: 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--text);
+}
+header .logo b { color: var(--accent); font-weight: normal; }
+header .logo .ver { font-size: 9px; color: var(--muted); margin-left: 3px; font-family: inherit; }
+header .spacer { flex: 1; }
+header .dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: 2px;
+  animation: flow 1.6s infinite;
+}
+header .dot:nth-child(2) { animation-delay: .25s; opacity: .7; }
+header .dot:nth-child(3) { animation-delay: .5s; opacity: .45; }
+@keyframes flow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@media (prefers-reduced-motion: reduce) { header .dot { animation: none; } }
+header button svg { width: 14px; height: 14px; vertical-align: -2px; margin-right: 5px; }
+header button svg.ic {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#langSel { padding: 6px 6px; font-weight: 600; }
+
+/* ----- estados globales ----------------------------------------------- */
+body.present header,
+body.present .rail,
+body.present aside,
+body.present footer,
+body.present #canvasCtrls { display: none !important; }
+body.noAside aside { display: none !important; }
+body.present #asideToggle { display: none !important; }
+
+/* ----- main / rail ---------------------------------------------------- */
+main { flex: 1; display: flex; min-height: 0; }
+.rail {
+  width: 64px;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 0;
+  overflow-y: auto;
+}
+.rail button {
+  width: 48px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 9px;
+  color: var(--muted);
+  padding: 2px;
+  position: relative;
+}
+.rail .kn {
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  font-size: 8px;
+  color: var(--muted);
+  opacity: .75;
+  pointer-events: none;
+}
+.rail button.toggled .kn { color: var(--accent); }
+.rail button svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+.rail button.toggled { color: var(--accent); }
+.rail hr { width: 36px; border: none; border-top: 1px solid var(--line); margin: 3px 0; }
+
+/* ----- stage / canvas ------------------------------------------------- */
+.stage { flex: 1; display: flex; position: relative; background: #0a0c10; overflow: hidden; }
+#wrap { position: relative; width: 100%; height: 100%; overflow: hidden; }
+#cv {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: default;
+  touch-action: none;
+}
+#editBox {
+  position: absolute;
+  display: none;
+  background: #000c;
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font: 15px Georgia, serif;
+  text-align: center;
+  resize: none;
+  overflow: hidden;
+  z-index: 5;
+}
+#iconDrawer {
+  position: absolute;
+  left: 74px;
+  top: 60px;
+  bottom: 46px;
+  width: 240px;
+  z-index: 20;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  overflow-y: auto;
+  display: none;
+  box-shadow: 0 10px 30px #000a;
+}
+#iconDrawer h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin: 10px 0 6px;
+}
+#iconDrawer h4:first-child { margin-top: 0; }
+.iconGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+.iconGrid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 2px;
+  font-size: 8.5px;
+  color: var(--muted);
+  height: auto;
+}
+.iconGrid img { width: 28px; height: 28px; }
+
+#asideToggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 16;
+  width: 22px;
+  height: 52px;
+  padding: 0;
+  border-radius: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+#asideToggle:hover { color: var(--accent); }
+
+#canvasCtrls {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 4px;
+}
+#canvasCtrls button {
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text);
+}
+#canvasCtrls button:hover { background: var(--panel2); border: none; }
+#canvasCtrls #zoomLbl { font-size: 11px; min-width: 46px; color: var(--muted); }
+#canvasCtrls .sep { width: 1px; height: 18px; background: var(--line); margin: 0 3px; }
+
+/* ----- aside (panel de selección) ------------------------------------ */
+aside {
+  width: 252px;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+aside h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
+.row label { color: var(--muted); font-size: 12px; }
+.row input[type=range] { width: 110px; accent-color: var(--accent); }
+.row input[type=number] { width: 64px; }
+.row select { width: 118px; padding: 4px 6px; }
+.row input[type=checkbox] { accent-color: var(--accent); width: 15px; height: 15px; }
+
+/* ----- footer / tabs de páginas -------------------------------------- */
+footer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  overflow-x: auto;
+}
+footer .tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border-radius: 7px 7px 0 0;
+  border: 1px solid var(--line);
+  border-bottom: none;
+  background: var(--panel2);
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 12px;
+}
+footer .tab.active { background: #1f3a3a; color: var(--accent); border-color: #3a5a5a; }
+footer .tab .x { opacity: .55; padding: 0 1px; cursor: pointer; }
+footer .tab .x:hover { opacity: 1; color: var(--danger); }
+footer .addTab {
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel2);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+/* ----- hint de modo presentación ------------------------------------- */
+#presentHint {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  background: #000c;
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 12px;
+  display: none;
+  opacity: 0;
+  transition: opacity .4s;
+}
+#presentHint.show { display: block; opacity: 1; }
+#presentHint.fade { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { #presentHint { transition: none; } }

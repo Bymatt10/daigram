@@ -1,0 +1,22 @@
+---
+// Stage.astro — área central: canvas (#cv dentro de #wrap), controles (zoom/undo/redo),
+// botón para ocultar panel, drawer de iconos y overlay de drag-drop.
+---
+
+<div class="stage">
+  <div id="wrap">
+    <canvas id="cv"></canvas>
+    <textarea id="editBox" rows="1"></textarea>
+  </div>
+  <button id="asideToggle" data-i18n-title="hidePanel" title="Ocultar panel">»</button>
+  <div id="canvasCtrls">
+    <button id="zoomOut" title="−">−</button>
+    <button id="zoomLbl" data-i18n-title="zoomFit" title="Ajustar vista">100%</button>
+    <button id="zoomIn" title="+">+</button>
+    <span class="sep"></span>
+    <button id="undoBtn" data-i18n-title="undoT" title="Deshacer (⌘Z)">↶</button>
+    <button id="redoBtn" data-i18n-title="redoT" title="Rehacer (⌘⇧Z)">↷</button>
+  </div>
+  <div id="iconDrawer" role="dialog" aria-label="Iconos"></div>
+  <div id="dropOverlay" style="position:absolute; inset:0; background:#4ad8c733; border:3px dashed var(--accent); z-index:30; pointer-events:none; font:bold 22px Georgia,serif; color:var(--accent); display:none; align-items:center; justify-content:center;" data-i18n="dropHere">Suelta el archivo aquí</div>
+</div>

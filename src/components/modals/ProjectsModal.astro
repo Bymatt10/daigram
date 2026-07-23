@@ -1,0 +1,17 @@
+---
+// ProjectsModal.astro — lista de proyectos guardados en localStorage (key daigram.projects.v1).
+// app.js renderiza #projList en runtime.
+---
+
+<div class="overlay" id="projModal">
+  <div class="card" style="width:560px">
+    <h2 data-i18n="projTitle">Proyectos</h2>
+    <p class="hint" data-i18n="projHint">Guardados en este navegador (localStorage). Para respaldos reales usa 💾 Guardar.</p>
+    <div class="row" style="gap:8px; margin-top:10px;">
+      <input id="projName" data-i18n-ph="projNamePh" placeholder="Nombre del proyecto…" autocomplete="off" style="flex:1; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:7px 9px; font:inherit;" />
+      <button id="projSave" class="primary" data-i18n="projSave">Guardar actual</button>
+    </div>
+    <div id="projList"></div>
+    <div class="actions"><button id="projClose" data-i18n="close">Cerrar</button></div>
+  </div>
+</div>
