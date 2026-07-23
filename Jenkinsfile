@@ -28,7 +28,7 @@ pipeline {
     )
     string(
       name: 'HOST_PORT',
-      defaultValue: '8080',
+      defaultValue: '9091',
       description: 'Solo se usa si DOCKER_NETWORK está vacío: puerto del host donde se expone el sitio.'
     )
   }

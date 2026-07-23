@@ -1,0 +1,26 @@
+# Despliegue self-hosted de daigram.
+#   docker compose up -d --build      → http://localhost:9091
+#
+# Detrás de un reverse proxy (Nginx Proxy Manager, Traefik, Caddy):
+# quita el bloque "ports", descomenta "networks" y apunta el proxy
+# a http://daigram:80 dentro de la red compartida.
+services:
+  daigram:
+    build:
+      context: .
+      args:
+        # Opcional: clave de MiniMax para el generador IA. Queda incrustada
+        # en el JS público del bundle — déjala vacía para que cada usuario
+        # ponga la suya en la app (se guarda solo en su navegador).
+        PUBLIC_MINIMAX_KEY: ""
+    image: daigram:latest
+    container_name: daigram
+    restart: unless-stopped
+    ports:
+      - "9091:80"
+    # networks:
+    #   - npm
+
+# networks:
+#   npm:
+#     external: true
