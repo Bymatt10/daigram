@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1.7
 
 # ---------- builder --------------------------------------------------------
-FROM node:26-alpine AS builder
+# node 24 = LTS y aún incluye corepack (Node 25+ ya no lo trae).
+FROM node:24-alpine AS builder
 
 # pnpm via corepack (no necesidad de instalar globalmente)
 ENV PNPM_HOME=/pnpm \
@@ -18,14 +19,18 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 # El resto del código
 COPY . .
 
+# Clave de MiniMax para el generador IA. Se inyecta EN BUILD (import.meta.env)
+# y queda incrustada en el bundle JS. Vacía por defecto: cada usuario puede
+# escribir la suya en el modal de IA de la app (se guarda en su navegador).
+ARG PUBLIC_MINIMAX_KEY=""
+ENV PUBLIC_MINIMAX_KEY=$PUBLIC_MINIMAX_KEY
+
 RUN pnpm build
 
 # ---------- runtime --------------------------------------------------------
+# nginx con su config por defecto: solo sirve los estáticos.
+# SSL, dominios, gzip y cache los maneja Nginx Proxy Manager por delante.
 FROM nginx:1.27-alpine AS runtime
-
-# Sustituir la config por defecto por una con cache agresivo + gzip + SPA fallback
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copiar SOLO el output estático desde el builder
 COPY --from=builder /app/dist /usr/share/nginx/html

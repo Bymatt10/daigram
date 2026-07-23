@@ -2,7 +2,7 @@
 .gitignore
 .dockerignore
 Dockerfile
-nginx.conf
+Jenkinsfile
 
 # Dependencias
 node_modules

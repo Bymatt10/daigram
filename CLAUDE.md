@@ -19,9 +19,9 @@ No tests and no linter are configured.
 
 ## Architecture
 
-Two files hold essentially the whole app:
+The DOM lives in Astro components and all behavior in one JS file:
 
-- `src/pages/index.astro` — the entire DOM: header toolbar, left tool rail, canvas `#cv` inside `#wrap`, right selection panel, and every modal (templates, Mermaid, AI, export, autosave-restore). Elements are wired by **id**; `app.js` grabs them with the `$(id)` helper, so ids in the HTML and `app.js` must stay in sync.
+- `src/pages/index.astro` composes the static DOM from `src/components/` (Toolbar, ToolRail, Stage with canvas `#cv` inside `#wrap`, SidePanel, PagesBar, and `components/modals/` for templates/Mermaid/AI/export/autosave). Styles are split by purpose in `src/styles/` (entry: `index.css`). Elements are wired by **id**; `app.js` grabs them with the `$(id)` helper, so ids in the components and `app.js` must stay in sync.
 - `src/scripts/app.js` (~1,750 lines) — the whole application: state, rendering, interaction, persistence, importers, export. Only dependency is `roughjs` (sketch skin).
 
 ### Data model (app.js)
