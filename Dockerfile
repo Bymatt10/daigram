@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # ---------- builder --------------------------------------------------------
-FROM node:20-alpine AS builder
+FROM node:26-alpine AS builder
 
 # pnpm via corepack (no necesidad de instalar globalmente)
 ENV PNPM_HOME=/pnpm \
