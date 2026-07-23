@@ -180,7 +180,9 @@ es:{
   animBuild:"Animar aparición", buildInterval:"Intervalo aparición",
   buildHint:"La aparición usa el «orden» de cada nodo. Las flechas aparecen cuando ambos nodos son visibles.",
   exportTitle:"Exportar página actual", format:"Formato", scale:"Escala", transparentBg:"Fondo transparente",
-  exportHint:"PNG soporta transparencia. JPG no. SVG es vectorial puro (no animado).",
+  exportHint:"PNG soporta transparencia. JPG no. SVG es vectorial puro (no animado). Video graba la animación en MP4 (listo para WhatsApp; WebM si el navegador no soporta MP4).",
+  videoDur:"Duración (segundos)", recording:"Grabando video…",
+  videoUnsupported:"Este navegador no puede grabar video.",
   cancel:"Cancelar", close:"Cerrar", import:"Importar",
   tplHint:"Empieza con un diagrama prediseñado.", tplSearchPh:"Buscar plantilla… (ej. CQRS, kafka, UML)", tplEmpty:"Sin resultados.",
   merTitle:"Importar Mermaid", merHint:"Pega tu código <code>flowchart</code>, <code>sequenceDiagram</code> o <code>graph</code>.",
@@ -256,7 +258,9 @@ en:{
   animBuild:"Animate build", buildInterval:"Build interval",
   buildHint:"Build-in uses each node's “order”. Arrows appear once both nodes are visible.",
   exportTitle:"Export current page", format:"Format", scale:"Scale", transparentBg:"Transparent background",
-  exportHint:"PNG supports transparency. JPG doesn't. SVG is pure vector (not animated).",
+  exportHint:"PNG supports transparency. JPG doesn't. SVG is pure vector (not animated). Video records the animation as MP4 (WhatsApp-ready; WebM if the browser can't record MP4).",
+  videoDur:"Duration (seconds)", recording:"Recording video…",
+  videoUnsupported:"This browser can't record video.",
   cancel:"Cancel", close:"Close", import:"Import",
   tplHint:"Start from a pre-built diagram.", tplSearchPh:"Search templates… (e.g. CQRS, kafka, UML)", tplEmpty:"No results.",
   merTitle:"Import Mermaid", merHint:"Paste your <code>flowchart</code>, <code>sequenceDiagram</code> or <code>graph</code> code.",
@@ -758,18 +762,33 @@ function render(c,t,opts={}){
     c.setLineDash([]);
   }
   if(arrowDraft){
-    // Preview de la flecha en construcción. Línea punteada con punta.
-    c.strokeStyle="#4ad8c7"; c.lineWidth=2; c.setLineDash([6,5]);
-    c.beginPath(); c.moveTo(arrowDraft.x0, arrowDraft.y0); c.lineTo(arrowDraft.x1, arrowDraft.y1); c.stroke();
-    c.setLineDash([]);
-    // Punta de flecha al final
+    // Preview de la flecha en construcción. Línea sólida con glow, sale del
+    // borde del círculo origen y termina en el cursor (donde aparecerá el
+    // endpoint destino, así el preview coincide con el resultado final).
     const a=Math.atan2(arrowDraft.y1-arrowDraft.y0, arrowDraft.x1-arrowDraft.x0);
-    c.fillStyle="#4ad8c7";
-    c.beginPath();
-    c.moveTo(arrowDraft.x1, arrowDraft.y1);
-    c.lineTo(arrowDraft.x1-11*Math.cos(a)+6*Math.sin(a), arrowDraft.y1-11*Math.sin(a)-6*Math.cos(a));
-    c.lineTo(arrowDraft.x1-11*Math.cos(a)-6*Math.sin(a), arrowDraft.y1-11*Math.sin(a)+6*Math.cos(a));
-    c.closePath(); c.fill();
+    const L=Math.hypot(arrowDraft.x1-arrowDraft.x0, arrowDraft.y1-arrowDraft.y0);
+    const start=nodeById(arrowDraft.startId);
+    const sr=start? start.w/2 : 0;
+    const sx=arrowDraft.x0 + Math.cos(a)*sr;
+    const sy=arrowDraft.y0 + Math.sin(a)*sr;
+    if(L>sr){
+      // Cuerpo de la línea
+      c.save();
+      c.strokeStyle="#4ad8c7"; c.lineWidth=3; c.lineCap="round";
+      c.shadowColor="#4ad8c7"; c.shadowBlur=10;
+      c.beginPath(); c.moveTo(sx,sy); c.lineTo(arrowDraft.x1, arrowDraft.y1); c.stroke();
+      c.restore();
+      // Punta
+      c.save();
+      c.fillStyle="#4ad8c7"; c.shadowColor="#4ad8c7"; c.shadowBlur=10;
+      const ah=12, aw=7;
+      c.beginPath();
+      c.moveTo(arrowDraft.x1, arrowDraft.y1);
+      c.lineTo(arrowDraft.x1-ah*Math.cos(a)+aw*Math.sin(a), arrowDraft.y1-ah*Math.sin(a)-aw*Math.cos(a));
+      c.lineTo(arrowDraft.x1-ah*Math.cos(a)-aw*Math.sin(a), arrowDraft.y1-ah*Math.sin(a)+aw*Math.cos(a));
+      c.closePath(); c.fill();
+      c.restore();
+    }
   }
   if(placing){
     const dx=Math.abs(placing.x1-placing.x0), dy=Math.abs(placing.y1-placing.y0);
@@ -2254,13 +2273,62 @@ function applyTemplate(tp){
   doc.pages[doc.cur]=np; clearSel(); centerView(); renderTabs(); syncProjectControls(); scheduleAutosave();
 }
 
-$("btnExport").onclick=()=>{ $("exFmt").value="png"; $("exModal").classList.add("show"); };
+function syncExportRows(){
+  const video=$("exFmt").value==="video";
+  $("exRowDur").style.display=video? "":"none";
+  $("exRowTr").style.display=video? "none":"";
+}
+$("btnExport").onclick=()=>{ $("exFmt").value="png"; syncExportRows(); $("exStatus").textContent=""; $("exModal").classList.add("show"); };
+$("exFmt").onchange=syncExportRows;
 $("exCancel").onclick=()=>$("exModal").classList.remove("show");
 $("exGo").onclick=()=>{
   const fmt=$("exFmt").value, scale=parseFloat($("exRes").value), tr=$("exTr").checked;
+  if(fmt==="video"){ exportVideo(scale, parseInt($("exDur").value)||6); return; }
   $("exModal").classList.remove("show");
   if(fmt==="svg") exportSVG(scale); else exportRaster(fmt, scale, tr);
 };
+// Graba la animación en tiempo real desde t=0 (incluye la aparición si está
+// activada) sobre un canvas offscreen. MP4/H.264 primero: es lo que aceptan
+// WhatsApp y demás mensajerías; WebM solo como respaldo.
+let recBusy=false;
+function exportVideo(scale, dur){
+  if(recBusy) return;
+  const mime=["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"]
+    .find(m=>window.MediaRecorder && MediaRecorder.isTypeSupported(m));
+  if(!mime){ $("exStatus").textContent=t("videoUnsupported"); return; }
+  const b=getBounds();
+  // H.264 exige dimensiones pares
+  const w=Math.max(320, Math.round(b.w*scale+80))&~1;
+  const h=Math.max(180, Math.round(b.h*scale+80))&~1;
+  const off=document.createElement("canvas"); off.width=w; off.height=h;
+  const oc=off.getContext("2d");
+  const T=THEMES[doc.theme];
+  const rec=new MediaRecorder(off.captureStream(30), {mimeType:mime, videoBitsPerSecond:8_000_000});
+  const chunks=[];
+  recBusy=true; $("exGo").disabled=true; $("exCancel").disabled=true;
+  rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
+  rec.onstop=()=>{
+    const ext=mime.startsWith("video/mp4")? "mp4":"webm";
+    download(new Blob(chunks,{type:mime.split(";")[0]}), slug(P().name)+"."+ext);
+    recBusy=false; $("exGo").disabled=false; $("exCancel").disabled=false;
+    $("exStatus").textContent="";
+    $("exModal").classList.remove("show");
+  };
+  const t0v=performance.now();
+  function frame(){
+    const el=(performance.now()-t0v)/1000;
+    oc.setTransform(1,0,0,1,0,0);
+    oc.fillStyle=T.bg; oc.fillRect(0,0,w,h);
+    oc.translate(-b.x*scale+40, -b.y*scale+40); oc.scale(scale,scale);
+    render(oc, el, {export:true, bg:T.bg, bounds:b});
+    if(el<dur){
+      $("exStatus").textContent=t("recording")+" "+el.toFixed(1)+" / "+dur+" s";
+      requestAnimationFrame(frame);
+    } else rec.stop();
+  }
+  rec.start(250);
+  frame();
+}
 function exportRaster(fmt, scale, transparent){
   const b=getBounds();
   const w=Math.max(320, Math.round(b.w*scale+80));

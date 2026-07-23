@@ -11,6 +11,16 @@
         <option value="png">PNG</option>
         <option value="jpg">JPG</option>
         <option value="svg">SVG</option>
+        <option value="video">Video (MP4)</option>
+      </select>
+    </div>
+    <div class="row" id="exRowDur" style="display:none"><label data-i18n="videoDur">Duración (segundos)</label>
+      <select id="exDur">
+        <option value="3">3</option>
+        <option value="6" selected>6</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="30">30</option>
       </select>
     </div>
     <div class="row"><label data-i18n="scale">Escala</label>
@@ -23,6 +33,7 @@
     </div>
     <div class="row" id="exRowTr"><label data-i18n="transparentBg">Fondo transparente</label><input type="checkbox" id="exTr" /></div>
     <p class="hint" id="exHint" data-i18n="exportHint">PNG soporta transparencia. JPG no. SVG es vectorial puro (no animado).</p>
+    <p class="hint" id="exStatus"></p>
     <div class="actions">
       <button id="exCancel" data-i18n="cancel">Cancelar</button>
       <button id="exGo" class="primary" data-i18n="export">Exportar</button>
