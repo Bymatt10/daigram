@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Bloquear assets internos (no necesarios para indexar)
+Disallow: /_astro/
+
+# Sitemap
+Sitemap: https://daigram.app/sitemap.xml

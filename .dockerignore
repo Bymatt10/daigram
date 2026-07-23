@@ -1,0 +1,33 @@
+.git
+.gitignore
+.dockerignore
+Dockerfile
+nginx.conf
+
+# Dependencias
+node_modules
+.pnpm-store
+
+# Build artifacts
+dist
+.astro
+.cache
+
+# Editor / SO
+.DS_Store
+.idea
+.vscode
+*.swp
+*.swo
+
+# Entorno y logs
+.env
+.env.*
+*.log
+
+# Salida de scripts
+scripts/contact-sheet.html
+
+# Documentos de prueba temporales
+_test-*.cjs
+*.tmp

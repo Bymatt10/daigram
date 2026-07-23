@@ -1,0 +1,400 @@
+---
+import "../styles/global.css";
+---
+
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="generator" content={Astro.generator} />
+
+<title>daigram — diagramas que fluyen</title>
+<meta name="description" content="Editor de diagramas animados de arquitectura. 100% en el navegador, sin cuenta, sin backend. Pega Mermaid, genera con IA o arrastra nodos." />
+<meta name="keywords" content="diagramas, arquitectura, editor, mermaid, animado, svg, png, open source, canvas, software architecture, flowchart" />
+<meta name="author" content="Bymatt" />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href="https://daigram.app/" />
+
+<meta name="theme-color" content="#0e1014" />
+<meta name="color-scheme" content="dark light" />
+
+<!-- Open Graph -->
+<meta property="og:site_name" content="daigram" />
+<meta property="og:title" content="daigram — diagramas que fluyen" />
+<meta property="og:description" content="Editor de diagramas animados de arquitectura. Pega Mermaid, genera con IA o arrastra nodos. 100% en el navegador." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://daigram.app/" />
+<meta property="og:image" content="https://daigram.app/og-image.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="daigram: editor de diagramas animados de arquitectura con importador de Mermaid, generador con IA y exporte a PNG y SVG." />
+<meta property="og:locale" content="es_ES" />
+<meta property="og:locale:alternate" content="en_US" />
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="daigram — diagramas que fluyen" />
+<meta name="twitter:description" content="Editor de diagramas animados. 100% en el navegador, sin cuenta, sin backend." />
+<meta name="twitter:image" content="https://daigram.app/og-image.png" />
+<meta name="twitter:image:alt" content="daigram: editor de diagramas animados de arquitectura." />
+
+<!-- PWA / iconos -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="application-name" content="daigram" />
+<meta name="apple-mobile-web-app-title" content="daigram" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<!-- Fuentes -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet" />
+
+<!-- Datos estructurados (JSON-LD) -->
+<script type="application/ld+json" set:html={JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "daigram",
+  "alternateName": "daigram.app",
+  "url": "https://daigram.app/",
+  "description": "Editor de diagramas animados de arquitectura que funciona 100% en el navegador. Permite crear, importar Mermaid, generar con IA y exportar a PNG, JPG o SVG.",
+  "applicationCategory": "DesignApplication",
+  "applicationSubCategory": "Diagramming",
+  "operatingSystem": "Any (browser-based)",
+  "inLanguage": ["es", "en"],
+  "isAccessibleForFree": true,
+  "license": "https://github.com/Bymatt10/daigram/blob/main/LICENSE",
+  "creator": { "@type": "Person", "name": "Bymatt" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "Importar Mermaid (flowchart, sequenceDiagram, graph)",
+    "Generar diagramas con IA (claves locales)",
+    "Exportar PNG, JPG y SVG",
+    "Compartir por enlace (deflate-compress en URL)",
+    "Pieles (mint, cyan, amber, rose, lime)",
+    "Modos de trazo (limpio, boceto, caótico)",
+    "Autosave y drag-drop de archivos",
+    "PWA instalable"
+  ],
+  "screenshot": "https://daigram.app/og-image.png",
+  "softwareVersion": "0.2"
+})} />
+</head>
+<body>
+
+<header>
+  <span class="logo">dai<b>gram</b><span aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ver">v0.2</span></span>
+  <button id="btnDemo" data-i18n="demo">Ejemplo</button>
+  <button id="btnClear" data-i18n="clear">Limpiar página</button>
+  <button id="btnTemplates" data-i18n="templates">Plantillas</button>
+  <button id="btnMermaid">Mermaid</button>
+  <button id="btnAI">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M11 4l1.8 4.7L17.5 10.5l-4.7 1.8L11 17l-1.8-4.7L4.5 10.5l4.7-1.8z"></path><path d="M19 3v4"></path><path d="M17 5h4"></path></svg><span data-i18n="ai">IA</span>
+  </button>
+  <span class="spacer"></span>
+  <select id="langSel" title="Idioma / Language">
+    <option value="es">ES</option>
+    <option value="en">EN</option>
+  </select>
+  <select id="themeSel" data-i18n-title="themeTitle" title="Tema del lienzo">
+    <option value="dark" data-i18n="themeDark">Fondo oscuro</option>
+    <option value="crema" data-i18n="themeCrema">Fondo crema</option>
+    <option value="claro" data-i18n="themeClaro">Fondo claro</option>
+  </select>
+  <select id="skinSel" data-i18n-title="skinTitle" title="Estilo visual">
+    <option value="mint">Mint</option>
+    <option value="cyan">Cyan</option>
+    <option value="amber" data-i18n="skinAmber">Ámbar</option>
+    <option value="rose" data-i18n="skinRose">Rosa</option>
+    <option value="lime" data-i18n="skinLime">Lima</option>
+  </select>
+  <label style="display:flex; align-items:center; gap:5px; font-size:12px; cursor:pointer;">
+    <input type="checkbox" id="chkGrid" checked /> <span data-i18n="gridLbl">Cuadrícula</span>
+  </label>
+  <button id="btnPresent" data-i18n-title="tPresent" title="Modo presentación (P)">
+    <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M9 21h6M12 17v4"></path><path d="M10 8l4.5 2.5L10 13z"></path></svg><span data-i18n="present">Presentar</span>
+  </button>
+  <button id="btnPlay" class="toggled">
+    <svg id="playIco" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg><span id="playLbl">Pausa</span>
+  </button>
+  <button id="btnProjects" data-i18n-title="tProjects" title="Proyectos guardados en este navegador">
+    <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"></path><path d="M10 12h4"></path></svg><span data-i18n="projects">Proyectos</span>
+  </button>
+  <button id="btnJsonOut" data-i18n-title="saveTitle" title="Guardar archivo .daigram.json (Ctrl+S)">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"></path><path d="M8 3v5h7V3"></path><rect x="8" y="13" width="8" height="6"></rect></svg><span data-i18n="save">Guardar</span>
+  </button>
+  <button id="btnJsonIn" data-i18n-title="openTitle" title="Abrir archivo guardado">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M3 19V6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v2"></path><path d="M3 19l2.5-8h17L20 19z"></path></svg><span data-i18n="open">Abrir</span>
+  </button>
+  <button id="btnShare" data-i18n-title="shareTitle" title="Copiar enlace con el diagrama">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3.3-3.3a4 4 0 1 0-5.7-5.7l-1.6 1.6"></path><path d="M14 10a4 4 0 0 0-5.7 0L5 13.3A4 4 0 1 0 10.7 19l1.6-1.6"></path></svg><span id="shareLbl" data-i18n="share">Enlace</span>
+  </button>
+  <input type="file" id="fileIn" accept=".json,.daigram" style="display:none" />
+  <input type="file" id="imgIn" accept="image/*" style="display:none" />
+  <button id="btnExport" class="primary">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M12 3v11"></path><path d="M8 10l4 4 4-4"></path><path d="M4 17v3h16v-3"></path></svg><span data-i18n="export">Exportar</span>
+  </button>
+</header>
+
+<main>
+  <nav class="rail" aria-label="Herramientas">
+    <button data-mode="select" class="toggled" data-i18n-title="tMove" title="Seleccionar / mover (V o 1)">
+      <svg viewBox="0 0 24 24"><path d="M6 3l12 9-5.5 1L10 19z"></path></svg><span data-i18n="move">Mover</span><span class="kn">1</span>
+    </button>
+    <button data-mode="connect" data-i18n-title="tConnect" title="Conectar con clics (C o 2)">
+      <svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="2.4"></circle><circle cx="19" cy="5" r="2.4"></circle><path d="M7 17L17 7"></path></svg><span data-i18n="arrow">Flecha</span><span class="kn">2</span>
+    </button>
+    <button data-mode="laser" data-i18n-title="tLaser" title="Puntero láser (L o 3)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"></circle><path d="M12 3v3.5M12 17.5V21M3 12h3.5M17.5 12H21M5.6 5.6l2.5 2.5M15.9 15.9l2.5 2.5M18.4 5.6l-2.5 2.5M8.1 15.9l-2.5 2.5"></path></svg><span data-i18n="laser">Láser</span><span class="kn">3</span>
+    </button>
+    <button data-mode="erase" data-i18n-title="tErase" title="Borrador (E): clic o arrastra sobre lo que quieras eliminar">
+      <svg viewBox="0 0 24 24"><path d="M15 4l5 5-8.5 8.5H8l-3.5-3.5z"></path><line x1="5" y1="20" x2="20" y2="20"></line></svg><span data-i18n="erase">Borrar</span><span class="kn">E</span>
+    </button>
+    <hr />
+    <button data-shape="rect" data-i18n-title="tBox" title="Caja (4)"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3"></rect></svg><span data-i18n="box">Caja</span><span class="kn">4</span></button>
+    <button data-shape="cylinder" data-i18n-title="tDb" title="Base de datos (5)"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"></path></svg><span data-i18n="db">BD</span><span class="kn">5</span></button>
+    <button data-shape="diamond" data-i18n-title="tDiamond" title="Decisión (6)"><svg viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9z"></path></svg><span data-i18n="diamond">Rombo</span><span class="kn">6</span></button>
+    <button data-shape="circle" data-i18n-title="tCircle" title="Círculo (7)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle></svg><span data-i18n="circle">Círculo</span><span class="kn">7</span></button>
+    <button data-shape="hex" data-i18n-title="tHex" title="Hexágono (8)"><svg viewBox="0 0 24 24"><path d="M7 4h10l4 8-4 8H7l-4-8z"></path></svg>Hex<span class="kn">8</span></button>
+    <button data-shape="text" data-i18n-title="tText" title="Solo texto (9)"><svg viewBox="0 0 24 24"><path d="M5 6h14M12 6v13"></path></svg><span data-i18n="text">Texto</span><span class="kn">9</span></button>
+    <hr />
+    <button id="btnIcons" data-i18n-title="tIcons" title="Iconos cloud (GCP, AWS, Azure…) (0)">
+      <svg viewBox="0 0 24 24"><path d="M7 17a4 4 0 0 1 0-8 5.5 5.5 0 0 1 10.6 1.4A3.5 3.5 0 0 1 17 17z"></path></svg><span data-i18n="icons">Iconos</span><span class="kn">0</span>
+    </button>
+    <button id="btnImg" data-i18n-title="tImg" title="Insertar imagen (o pega con Ctrl+V)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.6"></circle><path d="M4 17l5-5 4 4 3-3 4 4"></path></svg><span data-i18n="image">Imagen</span>
+    </button>
+  </nav>
+
+  <div class="stage">
+    <div id="wrap">
+      <canvas id="cv"></canvas>
+      <textarea id="editBox" rows="1"></textarea>
+    </div>
+    <button id="asideToggle" data-i18n-title="hidePanel" title="Ocultar panel">»</button>
+    <div id="canvasCtrls">
+      <button id="zoomOut" title="−">−</button>
+      <button id="zoomLbl" data-i18n-title="zoomFit" title="Ajustar vista">100%</button>
+      <button id="zoomIn" title="+">+</button>
+      <span class="sep"></span>
+      <button id="undoBtn" data-i18n-title="undoT" title="Deshacer (⌘Z)">↶</button>
+      <button id="redoBtn" data-i18n-title="redoT" title="Rehacer (⌘⇧Z)">↷</button>
+    </div>
+    <div id="iconDrawer" role="dialog" aria-label="Iconos"></div>
+    <div id="dropOverlay" style="position:absolute; inset:0; background:#4ad8c733; border:3px dashed var(--accent); z-index:30; pointer-events:none; font:bold 22px Georgia,serif; color:var(--accent); display:none; align-items:center; justify-content:center;" data-i18n="dropHere">Suelta el archivo aquí</div>
+  </div>
+
+  <aside>
+    <section>
+      <h3 data-i18n="selection">Selección</h3>
+      <div id="noSel" class="hint" data-i18n="hintMain">Nada seleccionado.</div>
+      <div id="multiSel" style="display:none">
+        <p class="hint" id="multiCount" style="font-size:12px; color:var(--text);"></p>
+        <div class="btnGrid">
+          <button id="mCopy" data-i18n="copy">Copiar</button>
+          <button id="mCut" data-i18n="cut">Cortar</button>
+          <button id="mDup" data-i18n="dup">Duplicar</button>
+          <button id="mDel" class="danger" data-i18n="del">Eliminar</button>
+        </div>
+      </div>
+      <div id="selBody" style="display:none">
+        <div class="row" style="flex-direction:column; align-items:stretch;">
+          <label for="lblEdit" data-i18n="textLbl">Texto (Enter = nueva línea)</label>
+          <textarea id="lblEdit"></textarea>
+        </div>
+        <div class="row" id="rowFs"><label data-i18n="fontSize">Tamaño de texto</label><input type="number" id="fsIn" min="8" max="96" placeholder="auto" /></div>
+        <div class="row" id="rowColor" style="flex-direction:column; align-items:stretch;">
+          <label data-i18n="semColor">Color semántico</label>
+          <div class="swatches" id="swatches"></div>
+        </div>
+        <div class="row" id="rowShape"><label data-i18n="shape">Forma</label>
+          <select id="shapeSel">
+            <option value="rect" data-i18n="box">Caja</option><option value="cylinder" data-i18n="db">BD</option>
+            <option value="diamond" data-i18n="diamond">Rombo</option><option value="circle" data-i18n="circle">Círculo</option>
+            <option value="hex" data-i18n="hexagon">Hexágono</option><option value="text" data-i18n="text">Texto</option>
+          </select>
+        </div>
+        <div class="row" id="rowBg" style="flex-direction:column; align-items:stretch;">
+          <label data-i18n="bgLbl">Fondo de la figura</label>
+          <div class="swatches" id="bgSw"></div>
+        </div>
+        <div class="row" id="rowStrokeStyle"><label data-i18n="strokeStyleLbl">Estilo de borde</label>
+          <select id="strokeStyleSel">
+            <option value="solid" data-i18n="ssSolid">Sólido</option>
+            <option value="dashed" data-i18n="ssDashed">Discontinuo</option>
+            <option value="dotted" data-i18n="ssDotted">Punteado</option>
+          </select>
+        </div>
+        <div class="row" id="rowSlop"><label data-i18n="slopLbl">Trazo</label>
+          <select id="slopSel">
+            <option value="" data-i18n="slopAuto">Auto (tema)</option>
+            <option value="0" data-i18n="slopClean">Limpio</option>
+            <option value="1" data-i18n="slopSketch">Boceto</option>
+            <option value="2" data-i18n="slopWild">Caótico</option>
+          </select>
+        </div>
+        <div class="row" id="rowCorners"><label data-i18n="cornersLbl">Esquinas</label>
+          <select id="cornerSel">
+            <option value="round" data-i18n="cornerRound">Redondeadas</option>
+            <option value="sharp" data-i18n="cornerSharp">Rectas</option>
+          </select>
+        </div>
+        <div class="row" id="rowOpacity"><label data-i18n="opacityLbl">Opacidad</label><input type="range" id="opIn" min="10" max="100" step="5" value="100" /></div>
+        <div class="btnGrid" id="rowZ">
+          <button id="btnFront" data-i18n="front">Al frente</button>
+          <button id="btnBack" data-i18n="back">Atrás</button>
+        </div>
+        <div class="row" id="rowPulse" style="margin-top:7px;"><label data-i18n="pulse">Pulso (resaltar)</label><input type="checkbox" id="pulseChk" /></div>
+        <div class="row" id="rowOrder"><label data-i18n="order">Orden de aparición</label><input type="number" id="orderIn" min="0" max="99" /></div>
+        <div class="row" id="rowRoute"><label data-i18n="route">Ruta</label>
+          <select id="routeSel"><option value="straight" data-i18n="straight">Recta</option><option value="ortho" data-i18n="ortho">Ortogonal</option></select>
+        </div>
+        <div class="row" id="rowFrom"><label data-i18n="exitFrom">Sale por</label>
+          <select id="fromSel"><option value="">Auto</option><option value="n" data-i18n="top">Arriba</option><option value="e" data-i18n="right">Derecha</option><option value="s" data-i18n="bottom">Abajo</option><option value="w" data-i18n="left">Izquierda</option></select>
+        </div>
+        <div class="row" id="rowTo"><label data-i18n="enterAt">Entra por</label>
+          <select id="toSel"><option value="">Auto</option><option value="n" data-i18n="top">Arriba</option><option value="e" data-i18n="right">Derecha</option><option value="s" data-i18n="bottom">Abajo</option><option value="w" data-i18n="left">Izquierda</option></select>
+        </div>
+        <div class="row" id="rowAnim"><label data-i18n="animDots">Puntos animados</label><input type="checkbox" id="animChk" /></div>
+        <div class="row" id="rowSpeedF"><label data-i18n="speedFac">Velocidad (× global)</label>
+          <select id="speedFacSel">
+            <option value="1">1×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option>
+          </select>
+        </div>
+        <div class="row" id="rowDotsGlobal"><label data-i18n="dotsGlobal">Puntos globales</label><input type="checkbox" id="dotsGlobalChk" /></div>
+        <div class="row" id="rowDots"><label data-i18n="dotsEdge">Puntos (esta flecha)</label>
+          <input type="number" id="edgeDotsIn" min="1" max="6" step="1" />
+        </div>
+        <div class="row" id="rowLineC" style="flex-direction:column; align-items:stretch;">
+          <label data-i18n="lineColor">Color de línea</label>
+          <div class="swatches" id="lineSw"></div>
+        </div>
+        <div class="row" id="rowDotC" style="flex-direction:column; align-items:stretch;">
+          <label data-i18n="dotColor">Color de puntos</label>
+          <div class="swatches" id="dotSw"></div>
+        </div>
+        <div class="row" id="rowDash"><label data-i18n="dashed">Línea punteada</label><input type="checkbox" id="dashChk" /></div>
+        <div class="row" id="rowArrS"><label data-i18n="arrStart">Punta al inicio</label><input type="checkbox" id="arrSChk" /></div>
+        <div class="row" id="rowArrE"><label data-i18n="arrEnd">Punta al final</label><input type="checkbox" id="arrEChk" /></div>
+        <div class="row" id="rowFlow"><label data-i18n="dotFlow">Flujo de puntos</label>
+          <select id="flowSel"><option value="normal" data-i18n="flowNormal">Normal →</option><option value="reverse" data-i18n="flowReverse">Inverso ←</option><option value="alternate" data-i18n="flowAlt">Alterno ⇄</option></select>
+        </div>
+        <button id="btnWps" class="wfull" style="display:none" data-i18n="removeBends">Quitar codos</button>
+        <button id="btnDel" class="danger wfull" data-i18n="deleteKey">Eliminar (Supr)</button>
+      </div>
+    </section>
+
+    <section>
+      <h3 data-i18n="animation">Animación</h3>
+      <div class="row"><label data-i18n="flowSpeed">Velocidad de flujo</label><input type="range" id="speedIn" min="0.2" max="2" step="0.1" value="0.5" /></div>
+      <div class="row"><label data-i18n="dotsPerArrow">Puntos por flecha</label><input type="range" id="dotsIn" min="1" max="6" step="1" value="3" /></div>
+      <div class="row"><label data-i18n="boilLbl">Trazo vivo (boiling)</label><input type="checkbox" id="boilChk" /></div>
+      <div class="row"><label data-i18n="animBuild">Animar aparición</label><input type="checkbox" id="buildChk" /></div>
+      <div class="row"><label data-i18n="buildInterval">Intervalo aparición</label><input type="range" id="staggerIn" min="0.2" max="1.2" step="0.1" value="0.45" /></div>
+      <p class="hint" data-i18n="buildHint">La aparición usa el «orden» de cada nodo. Las flechas aparecen cuando ambos nodos son visibles.</p>
+    </section>
+  </aside>
+</main>
+
+<footer id="pagesBar"></footer>
+
+<div id="presentHint" data-i18n="presentHint">Modo presentación — <kbd>Esc</kbd> salir · <kbd>L</kbd> láser · <kbd>Espacio</kbd> pausa</div>
+
+<div class="overlay" id="exModal">
+  <div class="card">
+    <h2 data-i18n="exportTitle">Exportar página actual</h2>
+    <div class="row"><label data-i18n="format">Formato</label>
+      <select id="exFmt">
+        <option value="png">PNG</option>
+        <option value="jpg">JPG</option>
+        <option value="svg">SVG</option>
+      </select>
+    </div>
+    <div class="row"><label data-i18n="scale">Escala</label>
+      <select id="exRes">
+        <option value="0.5">0.5x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
+    </div>
+    <div class="row" id="exRowTr"><label data-i18n="transparentBg">Fondo transparente</label><input type="checkbox" id="exTr" /></div>
+    <p class="hint" id="exHint" data-i18n="exportHint">PNG soporta transparencia. JPG no. SVG es vectorial puro (no animado).</p>
+    <div class="actions">
+      <button id="exCancel" data-i18n="cancel">Cancelar</button>
+      <button id="exGo" class="primary" data-i18n="export">Exportar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="tplModal">
+  <div class="card tplCard">
+    <h2 data-i18n="templates">Plantillas</h2>
+    <p class="hint" data-i18n="tplHint">Empieza con un diagrama prediseñado.</p>
+    <input id="tplSearch" type="search" data-i18n-ph="tplSearchPh" placeholder="Buscar plantilla…" autocomplete="off" />
+    <div class="templateGrid" id="tplGrid"></div>
+    <div class="actions"><button id="tplCancel" data-i18n="close">Cerrar</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="merModal">
+  <div class="card">
+    <h2 data-i18n="merTitle">Importar Mermaid</h2>
+    <p class="hint" data-i18n="merHint">Pega tu código <code>flowchart</code>, <code>sequenceDiagram</code> o <code>graph</code>.</p>
+    <textarea id="merInput" style="width:100%; min-height:200px; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; font:12px ui-monospace,monospace; resize:vertical;"></textarea>
+    <p class="hint" id="merStatus"></p>
+    <div class="actions">
+      <button id="merCancel" data-i18n="cancel">Cancelar</button>
+      <button id="merGo" class="primary" data-i18n="import">Importar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="projModal">
+  <div class="card" style="width:560px">
+    <h2 data-i18n="projTitle">Proyectos</h2>
+    <p class="hint" data-i18n="projHint">Guardados en este navegador (localStorage). Para respaldos reales usa 💾 Guardar.</p>
+    <div class="row" style="gap:8px; margin-top:10px;">
+      <input id="projName" data-i18n-ph="projNamePh" placeholder="Nombre del proyecto…" autocomplete="off" style="flex:1; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:7px 9px; font:inherit;" />
+      <button id="projSave" class="primary" data-i18n="projSave">Guardar actual</button>
+    </div>
+    <div id="projList"></div>
+    <div class="actions"><button id="projClose" data-i18n="close">Cerrar</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="aiModal">
+  <div class="card" style="width:560px">
+    <h2 data-i18n="aiTitle">Generar diagrama con IA</h2>
+    <p class="hint" data-i18n="aiHint">Describe el diagrama que quieres y la IA lo dibuja en una página nueva.</p>
+    <textarea id="aiPrompt" data-i18n-ph="aiPromptPh" placeholder="Ej: arquitectura de un e-commerce con carrito, pagos con Stripe, cola de pedidos y base de datos" style="width:100%; min-height:110px; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; font:inherit; resize:vertical; margin-bottom:8px;"></textarea>
+    <div class="row"><label data-i18n="aiKeyLbl">API key (MiniMax)</label><input type="password" id="aiKey" autocomplete="off" style="flex:1; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:6px 8px; font:inherit;" /></div>
+    <p class="hint" data-i18n="aiKeyHint">La key se guarda solo en tu navegador (localStorage). Nunca sale de aquí salvo hacia la API de MiniMax.</p>
+    <p class="hint" id="aiStatus"></p>
+    <div class="actions">
+      <button id="aiCancel" data-i18n="cancel">Cancelar</button>
+      <button id="aiGo" class="primary" data-i18n="aiGo">Generar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="autosaveModal">
+  <div class="card">
+    <h2 data-i18n="sessionTitle">Sesión guardada</h2>
+    <p class="hint" data-i18n="sessionHint">Se encontró una sesión guardada localmente. ¿Quieres restaurarla?</p>
+    <div class="actions">
+      <button id="autosaveDiscard" data-i18n="discard">Descartar</button>
+      <button id="autosaveRestore" class="primary" data-i18n="restore">Restaurar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import "../scripts/app.js";
+</script>
+
+</body>
+</html>
