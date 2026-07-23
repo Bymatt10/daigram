@@ -2310,10 +2310,12 @@ function exportVideo(scale, dur){
     .find(m=>window.MediaRecorder && MediaRecorder.isTypeSupported(m));
   if(!mime){ $("exStatus").textContent=t("videoUnsupported"); return; }
   const b=getBounds();
-  // Los encoders H.264 fallan en silencio por encima de ~4096 px (archivo de
-  // 0 bytes). Limitamos a 1920 por lado reduciendo la escala si hace falta.
-  const MAXD=1920;
-  const fit=Math.min(1, (MAXD-80)/(b.w*scale), (MAXD-80)/(b.h*scale));
+  // Los encoders H.264 fallan en silencio (archivo de 0 bytes) por encima de
+  // ~4096 px de lado o ~9 Mpx de área (level 5.1). Ajustamos la escala al
+  // máximo que cabe para no perder más nitidez de la necesaria.
+  const MAXD=3800, MAXAREA=8_300_000;
+  const bw=b.w*scale+80, bh=b.h*scale+80;
+  const fit=Math.min(1, MAXD/bw, MAXD/bh, Math.sqrt(MAXAREA/(bw*bh)));
   scale*=fit;
   // H.264 exige dimensiones pares
   const w=Math.max(320, Math.round(b.w*scale+80))&~1;
@@ -2321,7 +2323,9 @@ function exportVideo(scale, dur){
   const off=document.createElement("canvas"); off.width=w; off.height=h;
   const oc=off.getContext("2d");
   const T=THEMES[doc.theme];
-  const rec=new MediaRecorder(off.captureStream(30), {mimeType:mime, videoBitsPerSecond:8_000_000});
+  // Bitrate proporcional al área (~0.12 bits/px por frame a 30 fps)
+  const bitrate=Math.min(40_000_000, Math.max(8_000_000, Math.round(w*h*30*0.12)));
+  const rec=new MediaRecorder(off.captureStream(30), {mimeType:mime, videoBitsPerSecond:bitrate});
   const chunks=[];
   recBusy=true; $("exGo").disabled=true; $("exCancel").disabled=true;
   rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
@@ -2336,6 +2340,7 @@ function exportVideo(scale, dur){
   };
   const t0v=performance.now();
   function frame(){
+    if(rec.state==="inactive") return;
     const el=(performance.now()-t0v)/1000;
     oc.setTransform(1,0,0,1,0,0);
     oc.fillStyle=T.bg; oc.fillRect(0,0,w,h);
@@ -2347,6 +2352,9 @@ function exportVideo(scale, dur){
     } else rec.stop();
   }
   rec.start(250);
+  // Corte garantizado por temporizador: rAF se pausa si la ventana queda
+  // oculta y sin esto la grabación seguiría más allá de la duración pedida.
+  setTimeout(()=>{ if(rec.state!=="inactive") rec.stop(); }, dur*1000+300);
   frame();
 }
 function exportRaster(fmt, scale, transparent){
